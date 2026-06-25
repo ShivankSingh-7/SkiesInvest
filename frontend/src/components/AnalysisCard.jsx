@@ -1,5 +1,4 @@
 import ConfidenceBar from './ConfidenceBar';
-import { ExternalLink, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
 
 const DECISION_CONFIG = {
   INVEST: {
@@ -7,69 +6,62 @@ const DECISION_CONFIG = {
     icon: '✅',
     label: 'INVEST',
     color: '#10b981',
-    description: 'Strong evidence supports this investment',
+    desc: 'Strong evidence supports this investment',
   },
   PASS: {
     badgeClass: 'badge-pass',
     icon: '❌',
     label: 'PASS',
     color: '#f43f5e',
-    description: 'Evidence does not support investment at this time',
+    desc: 'Evidence does not support investment at this time',
   },
   NEED_MORE_DATA: {
     badgeClass: 'badge-need-data',
     icon: '🔶',
     label: 'NEED MORE DATA',
     color: '#f59e0b',
-    description: 'Insufficient verified information to make a confident decision',
+    desc: 'Insufficient verified information to make a confident decision',
   },
 };
 
 function ReasoningItem({ reason, index }) {
-  const isPositive = reason.type === 'positive';
-  const isNegative = reason.type === 'negative';
-  const color = isPositive ? '#10b981' : isNegative ? '#f43f5e' : '#8b5cf6';
-  const Icon = isPositive ? TrendingUp : isNegative ? TrendingDown : AlertCircle;
+  const isPos = reason.type === 'positive';
+  const isNeg = reason.type === 'negative';
+  const color = isPos ? '#10b981' : isNeg ? '#f43f5e' : '#8b5cf6';
+  const icon = isPos ? '↑' : isNeg ? '↓' : '→';
 
   return (
     <div
-      className="flex items-start gap-3 p-3 rounded-xl fade-in"
+      className="fade-in"
       style={{
-        background: `${color}08`,
-        border: `1px solid ${color}20`,
-        animationDelay: `${index * 0.06}s`,
-        opacity: 0,
+        display: 'flex', gap: 12, padding: '12px 16px', borderRadius: 12,
+        background: `${color}08`, border: `1px solid ${color}20`,
+        animationDelay: `${index * 0.05}s`,
       }}
     >
-      <Icon size={15} style={{ color, marginTop: 2, flexShrink: 0 }} />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>
+      <span style={{ color, fontWeight: 800, fontSize: 16, flexShrink: 0, marginTop: 1 }}>{icon}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.65 }}>
           {reason.point}
         </p>
         {reason.sourceUrls && reason.sourceUrls.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-2">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }}>
             {reason.sourceUrls.slice(0, 3).map((url, i) => {
-              let hostname = url;
-              try { hostname = new URL(url).hostname.replace('www.', ''); } catch {}
+              let host = url;
+              try { host = new URL(url).hostname.replace('www.', ''); } catch {}
               return (
-                <a
-                  key={i}
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="source-chip medium"
-                  style={{ fontSize: '10px' }}
-                >
-                  <ExternalLink size={8} />
-                  <span className="truncate" style={{ maxWidth: '120px' }}>{hostname}</span>
+                <a key={i} href={url} target="_blank" rel="noopener noreferrer"
+                  className="source-chip medium" style={{ fontSize: 10 }}>
+                  <span style={{ fontSize: 9 }}>↗</span>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 110 }}>{host}</span>
                 </a>
               );
             })}
           </div>
         )}
         {(!reason.sourceUrls || reason.sourceUrls.length === 0) && (
-          <span className="text-xs mt-1 block" style={{ color: '#f43f5e', opacity: 0.7 }}>
-            No source cited for this point
+          <span style={{ fontSize: 11, color: 'rgba(244,63,94,0.7)', marginTop: 4, display: 'block' }}>
+            No source cited
           </span>
         )}
       </div>
@@ -84,121 +76,127 @@ export default function AnalysisCard({ result }) {
     companyName, decision, confidence, investmentScore, evidenceCoverage,
     reasoning = [], verifiedFacts = [], unverifiedClaims = [],
     missingInformation = [], committeeSummary, memoryUsed, analysisCount,
-    financialAnalysis = {}, scoreBreakdown = {},
+    financialAnalysis = {},
   } = result;
 
   const config = DECISION_CONFIG[decision] || DECISION_CONFIG.NEED_MORE_DATA;
 
   return (
-    <div className="space-y-6">
-      {/* ── Decision Header ────────────────────────────────────────── */}
-      <div className="glass-card p-6 fade-in">
-        <div className="flex items-start justify-between gap-4 flex-wrap mb-5">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+      {/* ── Decision Header Card ──────────────────────────────────────────── */}
+      <div className="glass-card fade-in" style={{ padding: '28px 32px' }}>
+        {/* Top row: company name + badge */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 20 }}>
           <div>
-            <p className="text-xs font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>
-              INVESTMENT RECOMMENDATION
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>
+              Investment Recommendation
             </p>
-            <h1 className="text-2xl font-black mb-1" style={{ color: 'var(--text-primary)' }}>
+            <h1 style={{ fontSize: 26, fontWeight: 900, color: 'var(--text-primary)', marginBottom: 8 }}>
               {companyName}
             </h1>
             {memoryUsed && (
-              <span className="text-xs px-2 py-0.5 rounded-full"
-                style={{ background: 'rgba(139,92,246,0.1)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.2)' }}>
+              <span style={{
+                fontSize: 11, padding: '3px 10px', borderRadius: 999,
+                background: 'rgba(139,92,246,0.1)', color: '#a78bfa',
+                border: '1px solid rgba(139,92,246,0.2)', fontWeight: 600,
+              }}>
                 🧠 Memory used · Analysis #{analysisCount}
               </span>
             )}
           </div>
-          <div className={`px-6 py-3 rounded-2xl text-center ${config.badgeClass}`}>
-            <div className="text-2xl mb-0.5">{config.icon}</div>
-            <div className="text-sm font-black tracking-wider">{config.label}</div>
+
+          {/* Decision Badge */}
+          <div className={config.badgeClass} style={{ padding: '16px 24px', borderRadius: 16, textAlign: 'center', flexShrink: 0 }}>
+            <div style={{ fontSize: 28, marginBottom: 4 }}>{config.icon}</div>
+            <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.06em' }}>{config.label}</div>
           </div>
         </div>
 
-        <p className="text-sm mb-5" style={{ color: 'var(--text-secondary)' }}>
-          {config.description}
+        <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>
+          {config.desc}
         </p>
 
+        {/* Committee Summary */}
         {committeeSummary && (
-          <div className="p-4 rounded-xl mb-5 text-sm leading-relaxed"
-            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
-            <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
-              Committee Summary: &nbsp;
-            </span>
+          <div style={{
+            padding: '14px 18px', borderRadius: 12, marginBottom: 20, fontSize: 13,
+            background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+            color: 'var(--text-secondary)', lineHeight: 1.7,
+          }}>
+            <strong style={{ color: 'var(--text-primary)' }}>Committee Summary: </strong>
             {committeeSummary}
           </div>
         )}
 
-        {/* ── Score Grid ─────────────────────────────────────────────── */}
-        <div className="grid grid-cols-3 gap-4 mb-5">
+        {/* Score Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
           {[
-            { label: 'Confidence', value: confidence, color: config.color, unit: '%' },
-            { label: 'Inv. Score', value: investmentScore, color: '#3b82f6', unit: '/100' },
-            { label: 'Evidence', value: evidenceCoverage, color: '#8b5cf6', unit: '%' },
+            { label: 'Confidence',   value: confidence,      color: config.color, unit: '%' },
+            { label: 'Inv. Score',   value: investmentScore, color: '#3b82f6',    unit: '/100' },
+            { label: 'Evidence',     value: evidenceCoverage, color: '#8b5cf6',   unit: '%' },
           ].map(({ label, value, color, unit }) => (
-            <div key={label} className="text-center p-3 rounded-xl"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' }}>
-              <div className="text-2xl font-black font-mono mb-0.5" style={{ color }}>
-                {value}{unit === '%' ? '%' : ''}
-                {unit === '/100' && <span className="text-xs font-normal ml-0.5" style={{ color: 'var(--text-muted)' }}>/100</span>}
+            <div key={label} style={{
+              textAlign: 'center', padding: '16px 12px', borderRadius: 14,
+              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+            }}>
+              <div style={{ fontSize: 28, fontWeight: 900, fontFamily: 'monospace', color, lineHeight: 1, marginBottom: 4 }}>
+                {value}
+                <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', marginLeft: 2 }}>{unit}</span>
               </div>
-              <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{label}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{label}</div>
             </div>
           ))}
         </div>
 
-        {/* ── Confidence Bar ───────────────────────────────────────────── */}
         <ConfidenceBar value={confidence} label="Analysis Confidence" />
       </div>
 
-      {/* ── Reasoning ─────────────────────────────────────────────────── */}
+      {/* ── Reasoning ────────────────────────────────────────────────────── */}
       {reasoning.length > 0 && (
-        <div className="glass-card p-5 fade-in fade-in-delay-1">
-          <h2 className="text-sm font-bold mb-4" style={{ color: 'var(--text-secondary)' }}>
-            DECISION REASONING ({reasoning.length})
+        <div className="glass-card fade-in fade-in-delay-1" style={{ padding: '24px 28px' }}>
+          <h2 style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: 16, textTransform: 'uppercase' }}>
+            Decision Reasoning ({reasoning.length})
           </h2>
-          <div className="space-y-2">
-            {reasoning.map((reason, i) => (
-              <ReasoningItem key={i} reason={reason} index={i} />
-            ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {reasoning.map((r, i) => <ReasoningItem key={i} reason={r} index={i} />)}
           </div>
         </div>
       )}
 
-      {/* ── Financial Strengths & Weaknesses ──────────────────────────── */}
+      {/* ── Strengths & Weaknesses Grid ───────────────────────────────────── */}
       {(financialAnalysis.strengths?.length > 0 || financialAnalysis.weaknesses?.length > 0) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 fade-in fade-in-delay-2">
-          {/* Strengths */}
+        <div className="fade-in fade-in-delay-2" style={{
+          display: 'grid',
+          gridTemplateColumns: financialAnalysis.strengths?.length && financialAnalysis.weaknesses?.length
+            ? '1fr 1fr' : '1fr',
+          gap: 16,
+        }}>
           {financialAnalysis.strengths?.length > 0 && (
-            <div className="glass-card p-5">
-              <h3 className="text-sm font-bold mb-3" style={{ color: '#34d399' }}>
+            <div className="glass-card" style={{ padding: '22px 24px' }}>
+              <h3 style={{ fontSize: 12, fontWeight: 700, color: '#34d399', marginBottom: 14 }}>
                 💪 STRENGTHS ({financialAnalysis.strengths.length})
               </h3>
-              <div className="space-y-2">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {financialAnalysis.strengths.map((s, i) => (
-                  <div key={i} className="flex items-start gap-2">
-                    <span style={{ color: '#10b981', fontSize: '10px', marginTop: 4 }}>●</span>
-                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                      {s.point || s}
-                    </p>
+                  <div key={i} style={{ display: 'flex', gap: 8 }}>
+                    <span style={{ color: '#10b981', fontSize: 10, marginTop: 4, flexShrink: 0 }}>●</span>
+                    <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.55 }}>{s.point || s}</p>
                   </div>
                 ))}
               </div>
             </div>
           )}
-
-          {/* Weaknesses */}
           {financialAnalysis.weaknesses?.length > 0 && (
-            <div className="glass-card p-5">
-              <h3 className="text-sm font-bold mb-3" style={{ color: '#fb7185' }}>
+            <div className="glass-card" style={{ padding: '22px 24px' }}>
+              <h3 style={{ fontSize: 12, fontWeight: 700, color: '#fb7185', marginBottom: 14 }}>
                 ⚠️ WEAKNESSES ({financialAnalysis.weaknesses.length})
               </h3>
-              <div className="space-y-2">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {financialAnalysis.weaknesses.map((w, i) => (
-                  <div key={i} className="flex items-start gap-2">
-                    <span style={{ color: '#f43f5e', fontSize: '10px', marginTop: 4 }}>●</span>
-                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                      {w.point || w}
-                    </p>
+                  <div key={i} style={{ display: 'flex', gap: 8 }}>
+                    <span style={{ color: '#f43f5e', fontSize: 10, marginTop: 4, flexShrink: 0 }}>●</span>
+                    <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.55 }}>{w.point || w}</p>
                   </div>
                 ))}
               </div>
@@ -207,31 +205,33 @@ export default function AnalysisCard({ result }) {
         </div>
       )}
 
-      {/* ── Verified Facts ─────────────────────────────────────────────── */}
+      {/* ── Verified Facts ────────────────────────────────────────────────── */}
       {verifiedFacts.length > 0 && (
-        <div className="glass-card p-5 fade-in fade-in-delay-3">
-          <h2 className="text-sm font-bold mb-4" style={{ color: '#34d399' }}>
-            ✓ VERIFIED FACTS ({verifiedFacts.length})
+        <div className="glass-card fade-in fade-in-delay-3" style={{ padding: '22px 28px' }}>
+          <h2 style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: '#34d399', marginBottom: 14, textTransform: 'uppercase' }}>
+            ✓ Verified Facts ({verifiedFacts.length})
           </h2>
-          <div className="space-y-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {verifiedFacts.map((fact, i) => (
-              <div key={i} className="flex items-start gap-3 p-2.5 rounded-lg"
-                style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)' }}>
-                <span style={{ color: '#10b981', flexShrink: 0 }}>✓</span>
-                <div className="flex-1">
-                  <p className="text-sm" style={{ color: 'var(--text-primary)' }}>
+              <div key={i} style={{
+                display: 'flex', gap: 12, padding: '10px 14px', borderRadius: 10,
+                background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)',
+              }}>
+                <span style={{ color: '#10b981', flexShrink: 0, fontWeight: 700 }}>✓</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.55 }}>
                     {fact.fact || fact}
                   </p>
                   {fact.sourceUrls?.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1.5">
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 6 }}>
                       {fact.sourceUrls.slice(0, 2).map((url, j) => {
-                        let hostname = url;
-                        try { hostname = new URL(url).hostname.replace('www.', ''); } catch {}
+                        let host = url;
+                        try { host = new URL(url).hostname.replace('www.', ''); } catch {}
                         return (
                           <a key={j} href={url} target="_blank" rel="noopener noreferrer"
-                            className="source-chip high" style={{ fontSize: '10px' }}>
-                            <ExternalLink size={8} />
-                            <span className="truncate" style={{ maxWidth: '100px' }}>{hostname}</span>
+                            className="source-chip high" style={{ fontSize: 10 }}>
+                            <span style={{ fontSize: 9 }}>↗</span>
+                            <span style={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis' }}>{host}</span>
                           </a>
                         );
                       })}
@@ -244,40 +244,44 @@ export default function AnalysisCard({ result }) {
         </div>
       )}
 
-      {/* ── Unverified Claims ─────────────────────────────────────────── */}
+      {/* ── Unverified Claims ─────────────────────────────────────────────── */}
       {unverifiedClaims.length > 0 && (
-        <div className="glass-card p-5 fade-in fade-in-delay-4">
-          <h2 className="text-sm font-bold mb-4" style={{ color: '#fbbf24' }}>
-            ⚠️ UNVERIFIED CLAIMS ({unverifiedClaims.length})
+        <div className="glass-card fade-in fade-in-delay-4" style={{ padding: '22px 28px' }}>
+          <h2 style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: '#fbbf24', marginBottom: 14, textTransform: 'uppercase' }}>
+            ⚠️ Unverified Claims ({unverifiedClaims.length})
           </h2>
-          <div className="space-y-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {unverifiedClaims.map((claim, i) => (
-              <div key={i} className="flex items-start gap-3 p-2.5 rounded-lg"
-                style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)' }}>
-                <span style={{ color: '#f59e0b', flexShrink: 0 }}>?</span>
-                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{claim}</p>
+              <div key={i} style={{
+                display: 'flex', gap: 12, padding: '10px 14px', borderRadius: 10,
+                background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)',
+              }}>
+                <span style={{ color: '#f59e0b', flexShrink: 0, fontWeight: 700 }}>?</span>
+                <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.55 }}>{claim}</p>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* ── Missing Information ───────────────────────────────────────── */}
+      {/* ── Missing Information ───────────────────────────────────────────── */}
       {missingInformation.length > 0 && (
-        <div className="glass-card p-5 fade-in">
-          <h2 className="text-sm font-bold mb-4" style={{ color: '#fb7185' }}>
-            ❌ INFORMATION WE COULD NOT VERIFY ({missingInformation.length})
+        <div className="glass-card fade-in" style={{ padding: '22px 28px' }}>
+          <h2 style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: '#fb7185', marginBottom: 8, textTransform: 'uppercase' }}>
+            ❌ Information We Could Not Verify ({missingInformation.length})
           </h2>
-          <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
-            The following data points could not be verified from available sources.
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14 }}>
+            The following data could not be verified from available sources.
             Missing information has reduced the confidence score.
           </p>
-          <div className="space-y-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {missingInformation.map((item, i) => (
-              <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg"
-                style={{ background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.15)' }}>
-                <span style={{ color: '#f43f5e', flexShrink: 0 }}>✕</span>
-                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{item}</p>
+              <div key={i} style={{
+                display: 'flex', gap: 12, padding: '10px 14px', borderRadius: 10,
+                background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.15)',
+              }}>
+                <span style={{ color: '#f43f5e', flexShrink: 0, fontWeight: 700 }}>✕</span>
+                <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.55 }}>{item}</p>
               </div>
             ))}
           </div>

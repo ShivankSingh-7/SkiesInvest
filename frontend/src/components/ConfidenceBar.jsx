@@ -1,56 +1,48 @@
 import { useEffect, useRef, useState } from 'react';
 
-export default function ConfidenceBar({ value = 0, label = '', color = null, showValue = true, animated = true }) {
+export default function ConfidenceBar({ value = 0, label = '', color = null, showValue = true }) {
   const [displayed, setDisplayed] = useState(0);
   const rafRef = useRef(null);
 
-  // Determine color based on value if not overridden
   const getColor = () => {
     if (color) return color;
-    if (value >= 75) return '#10b981'; // green
-    if (value >= 50) return '#f59e0b'; // amber
-    return '#f43f5e';                  // red
+    if (value >= 75) return '#10b981';
+    if (value >= 50) return '#f59e0b';
+    return '#f43f5e';
   };
-
   const barColor = getColor();
 
-  // Animate the fill
   useEffect(() => {
-    if (!animated) {
-      setDisplayed(value);
-      return;
-    }
     let start = null;
     const duration = 1200;
-    const from = 0;
     const to = value;
 
     const step = (ts) => {
       if (!start) start = ts;
       const progress = Math.min((ts - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 4); // ease-out-quart
-      setDisplayed(Math.round(from + (to - from) * eased));
+      const eased = 1 - Math.pow(1 - progress, 4);
+      setDisplayed(Math.round(to * eased));
       if (progress < 1) rafRef.current = requestAnimationFrame(step);
     };
 
     rafRef.current = requestAnimationFrame(step);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [value, animated]);
+  }, [value]);
 
-  const confidenceClass =
-    value >= 75 ? 'confidence-high' : value >= 50 ? 'confidence-medium' : 'confidence-low';
+  const textColor =
+    value >= 75 ? '#34d399' : value >= 50 ? '#fbbf24' : '#fb7185';
 
   return (
-    <div>
+    <div style={{ width: '100%' }}>
       {(label || showValue) && (
-        <div className="flex items-center justify-between mb-2">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           {label && (
-            <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+            <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)' }}>
               {label}
             </span>
           )}
           {showValue && (
-            <span className={`text-sm font-bold font-mono ${confidenceClass}`}>
+            <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'monospace', color: textColor }}>
               {displayed}%
             </span>
           )}
@@ -60,9 +52,9 @@ export default function ConfidenceBar({ value = 0, label = '', color = null, sho
         <div
           className="progress-fill"
           style={{
-            width: `${(displayed / 100) * 100}%`,
-            background: `linear-gradient(90deg, ${barColor}99, ${barColor})`,
-            boxShadow: `0 0 12px ${barColor}60`,
+            width: `${displayed}%`,
+            background: `linear-gradient(90deg, ${barColor}90, ${barColor})`,
+            boxShadow: `0 0 10px ${barColor}50`,
           }}
         />
       </div>
