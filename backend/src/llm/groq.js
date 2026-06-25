@@ -3,7 +3,7 @@ import { ChatGroq } from '@langchain/groq';
 /**
  * Groq LLM Client
  *
- * Using llama-3.3-70b-versatile — best free-tier model for structured JSON.
+ * Using llama-3.1-8b-instant — fastest model with highest rate limits.
  * Temperature 0 for deterministic, evidence-based responses.
  */
 
@@ -13,7 +13,7 @@ export function getGroqClient() {
   if (!groqClient) {
     groqClient = new ChatGroq({
       apiKey: process.env.GROQ_API_KEY,
-      model: 'llama-3.3-70b-versatile',
+      model: 'llama-3.1-8b-instant',
       temperature: 0,
       maxTokens: 4096,
     });
