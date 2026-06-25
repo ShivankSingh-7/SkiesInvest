@@ -28,8 +28,8 @@ export function buildInvestmentGraph() {
     .addNode('memoryRetrieval', memoryRetrievalNode)
     .addNode('research', researchNode)
     .addNode('evidenceValidation', evidenceNode)
-    .addNode('financialAnalysis', financialNode)
-    .addNode('riskAnalysis', riskNode)
+    .addNode('financialAnalysisNode', financialNode)
+    .addNode('riskAnalysisNode', riskNode)
     .addNode('investmentCommittee', decisionNode)
     .addNode('memorySave', memorySaveNode)
 
@@ -37,9 +37,9 @@ export function buildInvestmentGraph() {
     .addEdge(START, 'memoryRetrieval')
     .addEdge('memoryRetrieval', 'research')
     .addEdge('research', 'evidenceValidation')
-    .addEdge('evidenceValidation', 'financialAnalysis')
-    .addEdge('financialAnalysis', 'riskAnalysis')
-    .addEdge('riskAnalysis', 'investmentCommittee')
+    .addEdge('evidenceValidation', 'financialAnalysisNode')
+    .addEdge('financialAnalysisNode', 'riskAnalysisNode')
+    .addEdge('riskAnalysisNode', 'investmentCommittee')
     .addEdge('investmentCommittee', 'memorySave')
     .addEdge('memorySave', END);
 
