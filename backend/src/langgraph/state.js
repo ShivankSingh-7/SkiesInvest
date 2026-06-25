@@ -63,6 +63,7 @@ export const InvestmentState = Annotation.Root({
     default: () => ({
       decision: 'NEED_MORE_DATA',
       confidence: 0,
+      informationGap: 0,
       investmentScore: 0,
       reasoning: [],
       verifiedFacts: [],

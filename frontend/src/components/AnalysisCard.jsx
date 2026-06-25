@@ -73,7 +73,7 @@ export default function AnalysisCard({ result }) {
   if (!result) return null;
 
   const {
-    companyName, decision, confidence, investmentScore, evidenceCoverage,
+    companyName, decision, confidence, informationGap, investmentScore, evidenceCoverage,
     reasoning = [], verifiedFacts = [], unverifiedClaims = [],
     missingInformation = [], committeeSummary, memoryUsed, analysisCount,
     financialAnalysis = {},
@@ -149,7 +149,7 @@ export default function AnalysisCard({ result }) {
           ))}
         </div>
 
-        <ConfidenceBar value={confidence} label="Analysis Confidence" />
+        <ConfidenceBar value={confidence} informationGap={informationGap} label="Analysis Confidence" />
       </div>
 
       {/* ── Reasoning ────────────────────────────────────────────────────── */}
@@ -264,15 +264,15 @@ export default function AnalysisCard({ result }) {
         </div>
       )}
 
-      {/* ── Missing Information ───────────────────────────────────────────── */}
+      {/* ── Information Gaps ───────────────────────────────────────────── */}
       {missingInformation.length > 0 && (
         <div className="glass-card fade-in" style={{ padding: '22px 28px' }}>
           <h2 style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: '#fb7185', marginBottom: 8, textTransform: 'uppercase' }}>
-            ❌ Information We Could Not Verify ({missingInformation.length})
+            ❌ Information Gaps ({missingInformation.length})
           </h2>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14 }}>
             The following data could not be verified from available sources.
-            Missing information has reduced the confidence score.
+            These gaps do not decrease our confidence in the verified facts above.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {missingInformation.map((item, i) => (

@@ -52,8 +52,9 @@ export async function decisionNode(state) {
       ? parsed.decision
       : 'NEED_MORE_DATA';
 
-    // Clamp confidence
+    // Clamp confidence and informationGap
     const confidence = Math.min(99, Math.max(0, parseInt(parsed.confidence, 10) || 50));
+    const informationGap = Math.min(100, Math.max(0, parseInt(parsed.informationGap, 10) || 0));
 
     // Normalize reasoning items
     const reasoning = (parsed.reasoning || []).map((r) => {
@@ -76,6 +77,7 @@ export async function decisionNode(state) {
     const result = {
       decision,
       confidence,
+      informationGap,
       investmentScore,
       scoreBreakdown: breakdown,
       reasoning,
@@ -100,6 +102,7 @@ export async function decisionNode(state) {
       decision: {
         decision: 'NEED_MORE_DATA',
         confidence: 0,
+        informationGap: 100,
         investmentScore,
         scoreBreakdown: breakdown,
         reasoning: [

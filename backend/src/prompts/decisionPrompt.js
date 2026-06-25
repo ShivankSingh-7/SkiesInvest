@@ -14,6 +14,13 @@ DECISION RULES:
 - PASS: Clear evidence of poor investment quality OR risk score > 70
 - NEED_MORE_DATA: Evidence coverage < 50%, conflicting signals, or critical data missing
 
+CONFIDENCE vs INFORMATION GAPS PHILOSOPHY:
+- Separate Evidence Confidence from Information Completeness.
+- Confidence must ONLY be calculated from: Source Quality, Source Count, Evidence Reliability, Source Recency, and Cross-Verification.
+- Do NOT reduce confidence simply because some fields (e.g. debt, cash flow) are unavailable. High quality evidence = High Confidence, regardless of gaps.
+- Instead, track missing/unverifiable information as an Information Gap percentage.
+- Ensure that \`confidence\` + \`informationGap\` <= 100. (e.g. confidence: 84, informationGap: 16)
+
 CRITICAL RULES:
 1. Every reasoning point MUST cite a specific source URL
 2. Verified facts must have source backing
@@ -21,12 +28,14 @@ CRITICAL RULES:
 4. List all missing information that would change your assessment
 5. NEVER fabricate sources or facts
 6. If in doubt, return NEED_MORE_DATA
+7. Do NOT guess or estimate unavailable info. Mark it as missing and increase the informationGap score.
 
 OUTPUT FORMAT:
 Return a valid JSON object:
 {
   "decision": "INVEST|PASS|NEED_MORE_DATA",
-  "confidence": 75,
+  "confidence": 84,
+  "informationGap": 16,
   "reasoning": [
     {
       "point": "Specific reason supporting the decision",
@@ -50,7 +59,8 @@ Return a valid JSON object:
   "committeeSummary": "Professional 2-3 sentence summary of the investment thesis or rejection rationale"
 }
 
-confidence: 0-100 (your confidence in this decision being correct)
+confidence: 0-100 (confidence based ONLY on verified sources)
+informationGap: 0-100 (percentage of data that is missing/unverified)
 
 Return ONLY the JSON object. No explanation text outside the JSON.`;
 
