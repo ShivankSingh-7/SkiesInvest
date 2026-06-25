@@ -91,18 +91,21 @@ export async function evidenceNode(state) {
   // Sort by confidence (highest first)
   validatedFindings.sort((a, b) => b.confidence - a.confidence);
 
-  // Calculate overall evidence coverage
-  const evidenceCoverage = calculateEvidenceCoverage(validatedFindings);
+  // Limit to top 20 findings to prevent exceeding downstream LLM token limits (like 6000 TPM)
+  const limitedFindings = validatedFindings.slice(0, 20);
 
-  const highConfidenceCount = validatedFindings.filter((f) => f.confidence >= 70).length;
+  // Calculate overall evidence coverage based on the limited highly-relevant findings
+  const evidenceCoverage = calculateEvidenceCoverage(limitedFindings);
+
+  const highConfidenceCount = limitedFindings.filter((f) => f.confidence >= 70).length;
 
   onProgress?.(
     'evidence',
-    `Evidence validated: ${highConfidenceCount} high-confidence findings, ${evidenceCoverage}% coverage`,
-    { total: validatedFindings.length, highConfidence: highConfidenceCount, evidenceCoverage }
+    `Evidence validated: ${highConfidenceCount} high-confidence findings (limited to top 20), ${evidenceCoverage}% coverage`,
+    { total: limitedFindings.length, highConfidence: highConfidenceCount, evidenceCoverage }
   );
 
-  return { validatedFindings, evidenceCoverage };
+  return { validatedFindings: limitedFindings, evidenceCoverage };
 }
 
 /**
