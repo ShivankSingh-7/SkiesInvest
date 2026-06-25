@@ -94,19 +94,15 @@ export async function researchNode(state) {
 function buildSearchQueries(companyName, previousFacts) {
   const base = [
     `${companyName} company overview business model 2024 2025`,
-    `${companyName} revenue growth financial results 2024`,
-    `${companyName} market position competitors industry`,
-    `${companyName} investment risks challenges 2024 2025`,
-    `${companyName} funding investors valuation`,
-    `${companyName} latest news recent developments`,
-    `${companyName} CEO leadership strategy`,
-    `${companyName} SEC filing annual report financial statements`,
+    `${companyName} revenue financial results earnings 2024 2025`,
+    `${companyName} market competitors industry position`,
+    `${companyName} investment risks challenges problems`,
+    `${companyName} latest news recent developments CEO`,
   ];
 
   // If we have previous facts, focus on what changed
   if (previousFacts.length > 0) {
-    base.push(`${companyName} news updates changes 2025`);
-    base.push(`${companyName} quarterly results earnings 2025`);
+    base.push(`${companyName} updates news changes since last quarter`);
   }
 
   return base;

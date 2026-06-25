@@ -18,7 +18,7 @@ const DECISION_CONFIG = {
   NEED_MORE_DATA: {
     badgeClass: 'badge-need-data',
     icon: '🔶',
-    label: 'NEED MORE DATA',
+    label: 'INCOMPLETE DATA',
     color: '#f59e0b',
     desc: 'Insufficient verified information to make a confident decision',
   },

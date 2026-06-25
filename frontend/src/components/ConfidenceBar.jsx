@@ -71,28 +71,29 @@ export default function ConfidenceBar({ value = 0, informationGap = 0, label = '
           )}
         </div>
       )}
-      <div className="progress-bar" style={{ display: 'flex' }}>
-        {/* Confirmed Segment */}
+      <div
+        className="progress-bar"
+        style={{
+          position: 'relative',
+          background: informationGap > 0 
+            ? `repeating-linear-gradient(45deg, rgba(255,255,255,0.03), rgba(255,255,255,0.03) 6px, rgba(255,255,255,0.08) 6px, rgba(255,255,255,0.08) 12px)`
+            : 'rgba(255, 255, 255, 0.07)'
+        }}
+      >
+        {/* Confirmed Segment (Overlaps the background) */}
         <div
           className="progress-fill"
           style={{
             width: `${displayedConf}%`,
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            height: '100%',
             background: `linear-gradient(90deg, ${barColor}90, ${barColor})`,
-            boxShadow: `0 0 10px ${barColor}50`,
+            boxShadow: `0 0 12px ${barColor}50`,
+            borderRadius: 999,
           }}
         />
-        {/* Information Gap Segment */}
-        {informationGap > 0 && (
-          <div
-            style={{
-              width: `${displayedGap}%`,
-              height: '100%',
-              background: `repeating-linear-gradient(45deg, rgba(255,255,255,0.02), rgba(255,255,255,0.02) 4px, rgba(255,255,255,0.1) 4px, rgba(255,255,255,0.1) 8px)`,
-              borderLeft: '1px solid rgba(0,0,0,0.3)',
-              transition: 'width 1.2s cubic-bezier(0.22, 1, 0.36, 1)'
-            }}
-          />
-        )}
       </div>
     </div>
   );
