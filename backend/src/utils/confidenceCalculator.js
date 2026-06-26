@@ -84,22 +84,18 @@ export function calculateEvidenceCoverage(validatedFindings) {
  */
 export function isEvidenceSufficient(evidenceCoverage, validatedFindings) {
   const highQualityFindings = (validatedFindings || []).filter(
-    (f) => f.confidence >= 60
+    (f) => f.confidence >= 50
   );
 
-  if (evidenceCoverage < 30 || highQualityFindings.length < 2) {
+  // Only flag as insufficient if we have almost nothing to go on
+  if (highQualityFindings.length < 2) {
     return {
       sufficient: false,
       reason: 'Insufficient evidence to make a reliable recommendation',
     };
   }
 
-  if (evidenceCoverage < 50) {
-    return {
-      sufficient: false,
-      reason: 'Limited evidence available — consider NEED_MORE_DATA',
-    };
-  }
-
+  // Missing financial metrics (debt, cash flow etc.) should NOT be treated as
+  // insufficient evidence — they are information gaps, not evidence failure.
   return { sufficient: true, reason: 'Evidence coverage meets minimum threshold' };
 }

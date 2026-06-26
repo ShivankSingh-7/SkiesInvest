@@ -4,7 +4,8 @@ const RISK_TYPES = {
   financial:   { label: 'Financial',    icon: '💸' },
   operational: { label: 'Operational',  icon: '⚙️' },
   market:      { label: 'Market',       icon: '📉' },
-  data_risk:   { label: 'Data Risk',    icon: '❓' },
+  data_risk:   { label: 'Data Gap',     icon: '🔍' },
+  data_gap:    { label: 'Data Gap',     icon: '🔍' },
 };
 
 function RiskMeter({ score }) {
@@ -54,9 +55,34 @@ function RiskMeter({ score }) {
 }
 
 function RiskItem({ risk, index }) {
+  const isDataGap = risk.type === 'data_risk' || risk.type === 'data_gap';
   const meta = RISK_TYPES[risk.type] || { label: risk.type || 'Risk', icon: '⚠️' };
   const severity = risk.severity || 'medium';
   const severityColor = severity === 'high' ? '#f43f5e' : severity === 'medium' ? '#f59e0b' : '#10b981';
+
+  // Data gaps rendered as a subtle informational row, not as alarming risk cards
+  if (isDataGap) {
+    return (
+      <div
+        className="fade-in"
+        style={{
+          display: 'flex', gap: 10, padding: '10px 14px', borderRadius: 10,
+          background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)',
+          animationDelay: `${index * 0.06}s`,
+        }}
+      >
+        <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1, opacity: 0.6 }}>🔍</span>
+        <div>
+          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)' }}>
+            DATA GAP · {risk.title}
+          </span>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5, marginTop: 2 }}>
+            {risk.description}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -116,10 +142,15 @@ function RiskItem({ risk, index }) {
 
 export default function RiskCard({ riskAnalysis = {} }) {
   const { risks = [], riskScore = 50, riskSummary = '' } = riskAnalysis;
-  const high = risks.filter((r) => r.severity === 'high');
-  const med  = risks.filter((r) => r.severity === 'medium');
-  const low  = risks.filter((r) => r.severity === 'low');
-  const sorted = [...high, ...med, ...low];
+
+  // Separate real risks from data gap notes
+  const businessRisks = risks.filter((r) => r.type !== 'data_risk' && r.type !== 'data_gap');
+  const dataGaps = risks.filter((r) => r.type === 'data_risk' || r.type === 'data_gap');
+
+  const high = businessRisks.filter((r) => r.severity === 'high');
+  const med  = businessRisks.filter((r) => r.severity === 'medium');
+  const low  = businessRisks.filter((r) => r.severity === 'low');
+  const sortedRisks = [...high, ...med, ...low];
 
   return (
     <div>
@@ -134,14 +165,29 @@ export default function RiskCard({ riskAnalysis = {} }) {
         </div>
       )}
 
-      {sorted.length === 0 ? (
+      {sortedRisks.length === 0 ? (
         <div className="glass-card" style={{ padding: 40, textAlign: 'center' }}>
           <p style={{ fontSize: 32, marginBottom: 8 }}>✅</p>
           <p style={{ color: 'var(--text-secondary)' }}>No specific risks identified in research</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {sorted.map((risk, i) => <RiskItem key={i} risk={risk} index={i} />)}
+          {sortedRisks.map((risk, i) => <RiskItem key={i} risk={risk} index={i} />)}
+        </div>
+      )}
+
+      {/* Data gaps — shown as a compact, subdued section at the bottom */}
+      {dataGaps.length > 0 && (
+        <div style={{ marginTop: 16 }}>
+          <p style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--text-muted)',
+            textTransform: 'uppercase', marginBottom: 8
+          }}>
+            🔍 Information Gaps ({dataGaps.length}) — Not factored into risk score
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {dataGaps.map((risk, i) => <RiskItem key={i} risk={risk} index={i} />)}
+          </div>
         </div>
       )}
     </div>

@@ -1,73 +1,73 @@
 /**
  * Risk Analysis Agent System Prompt
  */
-export const RISK_SYSTEM_PROMPT = `You are a risk analyst at a top-tier investment firm. Your job is to identify and assess investment risks based on research evidence.
+export const RISK_SYSTEM_PROMPT = `You are a risk analyst at a top-tier investment firm. Identify and assess investment risks based only on the evidence provided.
 
-CRITICAL RULES:
-1. Only identify risks that are supported by the provided research findings
-2. Do NOT invent risks — if evidence doesn't support a risk, do not include it
-3. Every risk must cite at least one source URL from the findings
-4. Rate severity honestly: do not inflate or deflate risk levels
-5. Missing information is itself a risk (data risk)
+RULES:
+1. Only report risks supported by the provided findings — do NOT invent risks
+2. Every risk must cite at least one source URL
+3. Rate severity honestly
+4. Separately flag data gaps as informational notes (not as major risks unless critical)
 
-RISK CATEGORIES:
-- competition: Competitive threats, market crowding, better-funded rivals
-- regulatory: Legal challenges, compliance costs, government regulation
-- financial: Debt, burn rate, profitability concerns, funding runway
-- operational: Execution risk, scaling challenges, leadership issues
-- market: Macro conditions, market size limits, demand uncertainty
-- data_risk: Missing critical information that prevents proper assessment
+RISK CATEGORIES: competition, regulatory, financial, operational, market, data_gap
 
-SEVERITY LEVELS:
-- high: Could significantly impair investment value
-- medium: Notable concern requiring monitoring
-- low: Minor risk, manageable
+SEVERITY: high (impairs value) | medium (monitor) | low (manageable)
 
-OUTPUT FORMAT:
-Return a valid JSON object:
+OUTPUT — return ONLY this JSON:
 {
   "risks": [
     {
-      "type": "competition|regulatory|financial|operational|market|data_risk",
-      "title": "Short risk title",
-      "description": "Detailed risk description with specific evidence",
+      "type": "competition|regulatory|financial|operational|market|data_gap",
+      "title": "Short title",
+      "description": "Evidence-backed description (2 sentences max)",
       "severity": "high|medium|low",
-      "sourceUrls": ["url1", "url2"],
-      "mitigatingFactors": "Any factors that reduce this risk, or null"
+      "sourceUrls": ["url1"],
+      "mitigatingFactors": "Brief mitigation or null"
     }
   ],
   "riskScore": 45,
-  "riskSummary": "One-paragraph risk overview for the investment committee"
+  "riskSummary": "One sentence risk overview."
 }
 
-riskScore: 0 = very low risk (great investment), 100 = extremely high risk (avoid)
-
-Return ONLY the JSON object. No explanation text outside the JSON.`;
+riskScore: 0 = very low risk, 100 = extremely high risk. Return ONLY the JSON.`;
 
 export function buildRiskUserMessage(companyName, validatedFindings, financialAnalysis) {
-  const findingText = validatedFindings
-    .map((f, i) => `[${i + 1}] (${f.confidence}% confidence): ${f.statement} — Sources: ${(f.sources || []).map((s) => s.url).join(', ')}`)
+  // Use top 12 high-confidence findings only — keeps payload under 6000 TPM
+  const topFindings = validatedFindings
+    .filter((f) => f.confidence >= 40)
+    .slice(0, 12);
+
+  const findingText = topFindings
+    .map((f, i) => {
+      // Truncate long statements to 120 chars and use only the first source URL
+      const stmt = f.statement.length > 120 ? f.statement.slice(0, 120) + '...' : f.statement;
+      const src = (f.sources || [])[0]?.url || '';
+      return `[${i + 1}] ${f.confidence}%: ${stmt}${src ? ' — ' + src : ''}`;
+    })
     .join('\n');
 
+  // Only pass real weakness points (not "DATA UNAVAILABLE" entries)
   const weaknesses = (financialAnalysis?.weaknesses || [])
-    .map((w) => `- ${w.point || w}`)
+    .filter((w) => {
+      const text = (w.point || w || '').toLowerCase();
+      return !text.includes('data unavailable') && !text.includes('not available');
+    })
+    .slice(0, 4)
+    .map((w) => `- ${(w.point || w).slice(0, 80)}`)
     .join('\n');
 
-  const unavailable = (financialAnalysis?.unavailableData || [])
-    .map((u) => `- ${u}`)
-    .join('\n');
+  // List missing data as a simple note — not part of the risk evidence
+  const missingNote = (financialAnalysis?.unavailableData || [])
+    .slice(0, 4)
+    .join(', ');
 
-  return `Assess investment risks for: "${companyName}"
+  return `Assess risks for: "${companyName}"
 
-RESEARCH FINDINGS:
+FINDINGS (top ${topFindings.length}, ranked by confidence):
 ${findingText || 'No findings available.'}
 
-FINANCIAL WEAKNESSES IDENTIFIED:
-${weaknesses || 'None identified.'}
+WEAKNESSES FROM FINANCIAL ANALYSIS:
+${weaknesses || 'None identified.'}${missingNote ? `\n\nDATA GAPS (informational only, not evidence of risk): ${missingNote}` : ''}
 
-MISSING DATA (potential data risk):
-${unavailable || 'None.'}
-
-Identify all material risks based ONLY on the evidence above.
-Calculate an overall riskScore from 0-100.`;
+Identify material risks based ONLY on the evidence. Calculate riskScore 0-100.`;
 }

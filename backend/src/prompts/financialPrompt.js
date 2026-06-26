@@ -8,7 +8,8 @@ CRITICAL RULES:
 2. If a financial metric is NOT mentioned in the findings, mark it as "DATA UNAVAILABLE"
 3. NEVER estimate, assume, or extrapolate financial figures
 4. Clearly separate verified information from uncertain signals
-5. Be conservative — missing data should raise concern, not be ignored
+5. Missing data is an information gap — list it in unavailableData but do NOT treat it as a negative signal or weakness
+6. Only list something as a weakness if there is ACTUAL evidence of a problem
 
 OUTPUT FORMAT:
 Return a valid JSON object:
