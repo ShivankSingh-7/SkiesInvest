@@ -3,24 +3,27 @@ import ConfidenceBar from './ConfidenceBar';
 const DECISION_CONFIG = {
   INVEST: {
     badgeClass: 'badge-invest',
-    icon: '✅',
+    icon: '↑',
     label: 'INVEST',
+    sublabel: 'Strong opportunity',
     color: '#10b981',
     desc: 'Strong evidence supports this investment',
   },
   PASS: {
     badgeClass: 'badge-pass',
-    icon: '❌',
+    icon: '↓',
     label: 'PASS',
+    sublabel: 'Not recommended',
     color: '#f43f5e',
     desc: 'Evidence does not support investment at this time',
   },
   NEED_MORE_DATA: {
     badgeClass: 'badge-need-data',
-    icon: '🔶',
-    label: 'INCOMPLETE DATA',
+    icon: '◎',
+    label: 'INCONCLUSIVE',
+    sublabel: 'Limited evidence',
     color: '#f59e0b',
-    desc: 'Insufficient verified information to make a confident decision',
+    desc: 'Available evidence is not sufficient for a confident decision',
   },
 };
 
@@ -81,12 +84,35 @@ export default function AnalysisCard({ result }) {
 
   const config = DECISION_CONFIG[decision] || DECISION_CONFIG.NEED_MORE_DATA;
 
+  // Compute donut chart segments
+  const verifiedPct = Math.min(100, Math.round(confidence));
+  const unverifiedPct = Math.min(100 - verifiedPct, Math.round((unverifiedClaims.length / Math.max(1, verifiedFacts.length + unverifiedClaims.length + missingInformation.length)) * 100));
+  const missingPct = Math.max(0, 100 - verifiedPct - unverifiedPct);
+
+  // Build SVG donut (r=40, circumference ≈ 251.3)
+  const R = 40;
+  const C = 2 * Math.PI * R;
+  const segments = [
+    { pct: verifiedPct,   color: config.color,  label: 'Verified' },
+    { pct: unverifiedPct, color: '#f59e0b',       label: 'Unverified' },
+    { pct: missingPct,    color: 'rgba(255,255,255,0.1)', label: 'Missing' },
+  ];
+  let offset = 0;
+  const arcs = segments.map((seg) => {
+    const dash = (seg.pct / 100) * C;
+    const gap = C - dash;
+    const arc = { ...seg, dash, gap, offset };
+    offset += dash;
+    return arc;
+  });
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
       {/* ── Decision Header Card ──────────────────────────────────────────── */}
       <div className="glass-card fade-in" style={{ padding: '28px 32px' }}>
-        {/* Top row: company name + badge */}
+
+        {/* Top row: company name + decision pill */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 20 }}>
           <div>
             <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>
@@ -106,10 +132,15 @@ export default function AnalysisCard({ result }) {
             )}
           </div>
 
-          {/* Decision Badge */}
-          <div className={config.badgeClass} style={{ padding: '16px 24px', borderRadius: 16, textAlign: 'center', flexShrink: 0 }}>
-            <div style={{ fontSize: 28, marginBottom: 4 }}>{config.icon}</div>
-            <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.06em' }}>{config.label}</div>
+          {/* Slim decision pill — no more big badge */}
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            padding: '14px 22px', borderRadius: 14, flexShrink: 0,
+            background: `${config.color}10`, border: `1px solid ${config.color}30`,
+          }}>
+            <span style={{ fontSize: 26, lineHeight: 1, marginBottom: 6 }}>{config.icon}</span>
+            <span style={{ fontSize: 14, fontWeight: 800, color: config.color, letterSpacing: '0.05em' }}>{config.label}</span>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3 }}>{config.sublabel}</span>
           </div>
         </div>
 
@@ -129,27 +160,84 @@ export default function AnalysisCard({ result }) {
           </div>
         )}
 
-        {/* Score Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
-          {[
-            { label: 'Confidence',   value: confidence,      color: config.color, unit: '%' },
-            { label: 'Inv. Score',   value: investmentScore, color: '#3b82f6',    unit: '/100' },
-            { label: 'Evidence',     value: evidenceCoverage, color: '#8b5cf6',   unit: '%' },
-          ].map(({ label, value, color, unit }) => (
-            <div key={label} style={{
-              textAlign: 'center', padding: '16px 12px', borderRadius: 14,
-              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
-            }}>
-              <div style={{ fontSize: 28, fontWeight: 900, fontFamily: 'monospace', color, lineHeight: 1, marginBottom: 4 }}>
-                {value}
-                <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', marginLeft: 2 }}>{unit}</span>
+        {/* Score + Donut Layout */}
+        <div style={{ display: 'flex', gap: 20, alignItems: 'stretch', flexWrap: 'wrap', marginBottom: 20 }}>
+
+          {/* Score tiles */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10, minWidth: 180 }}>
+            {[
+              { label: 'Evidence Confidence', value: confidence, color: config.color, unit: '%', sub: 'Based on verified sources only' },
+              { label: 'Investment Score',     value: investmentScore, color: '#3b82f6', unit: '/100', sub: 'Overall investment quality' },
+              { label: 'Evidence Coverage',    value: evidenceCoverage, color: '#8b5cf6', unit: '%', sub: 'Research topic coverage' },
+            ].map(({ label, value, color, unit, sub }) => (
+              <div key={label} style={{
+                padding: '14px 16px', borderRadius: 14, flex: 1,
+                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+                display: 'flex', alignItems: 'center', gap: 14,
+              }}>
+                <div style={{ fontSize: 28, fontWeight: 900, fontFamily: 'monospace', color, lineHeight: 1, flexShrink: 0 }}>
+                  {value ?? '—'}
+                  <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', marginLeft: 2 }}>{unit}</span>
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{label}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{sub}</div>
+                </div>
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{label}</div>
+            ))}
+          </div>
+
+          {/* Donut chart — evidence breakdown */}
+          <div style={{
+            padding: '20px 24px', borderRadius: 14, flexShrink: 0,
+            background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 180,
+          }}>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 14 }}>
+              Data Breakdown
+            </p>
+            <svg width="100" height="100" viewBox="0 0 100 100" style={{ overflow: 'visible' }}>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="14" />
+              {arcs.map((arc, i) => arc.pct > 0 && (
+                <circle
+                  key={i}
+                  cx="50" cy="50" r="40"
+                  fill="none"
+                  stroke={arc.color}
+                  strokeWidth="14"
+                  strokeDasharray={`${arc.dash} ${arc.gap}`}
+                  strokeDashoffset={-arc.offset}
+                  strokeLinecap="round"
+                  transform="rotate(-90 50 50)"
+                  style={{ transition: 'stroke-dasharray 1s ease' }}
+                />
+              ))}
+              <text x="50" y="46" textAnchor="middle" fill={config.color} fontSize="15" fontWeight="900" fontFamily="monospace">
+                {verifiedPct}%
+              </text>
+              <text x="50" y="60" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="8" fontFamily="Inter, sans-serif">
+                verified
+              </text>
+            </svg>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginTop: 14, width: '100%' }}>
+              {[
+                { color: config.color, label: 'Verified', pct: verifiedPct },
+                { color: '#f59e0b', label: 'Unverified', pct: unverifiedPct },
+                { color: 'rgba(255,255,255,0.2)', label: 'Missing', pct: missingPct },
+              ].map(({ color, label, pct }) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0 }} />
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{label}</span>
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', fontFamily: 'monospace' }}>{pct}%</span>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
 
-        <ConfidenceBar value={confidence} informationGap={informationGap} label="Analysis Confidence" />
+        <ConfidenceBar value={confidence} informationGap={informationGap} label="Evidence Confidence" />
       </div>
 
       {/* ── Reasoning ────────────────────────────────────────────────────── */}

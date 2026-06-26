@@ -139,14 +139,19 @@ export default function ResultPage() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{
-              fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 999,
-              background: `${decisionColor}18`, color: decisionColor,
-              border: `1px solid ${decisionColor}35`,
-              letterSpacing: '0.05em',
-            }}>
-              {result?.decision || 'NEED_MORE_DATA'}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{
+                width: 8, height: 8, borderRadius: '50%', background: decisionColor,
+                boxShadow: `0 0 6px ${decisionColor}`,
+              }} />
+              <span style={{
+                fontSize: 12, fontWeight: 700, color: decisionColor, letterSpacing: '0.04em',
+              }}>
+                {result?.decision === 'INVEST' ? 'Invest'
+                  : result?.decision === 'PASS' ? 'Pass'
+                  : 'Inconclusive'}
+              </span>
+            </div>
             <button
               onClick={() => { setStatus('loading'); setProgressLog([]); setResult(null); runAnalysis(companyName); }}
               title="Re-analyze"
