@@ -15,7 +15,8 @@ export function getGroqClient() {
       apiKey: process.env.GROQ_API_KEY,
       model: 'llama-3.1-8b-instant',
       temperature: 0,
-      maxTokens: 4096,
+      maxTokens: 3000,
+      maxRetries: 0,
     });
   }
   return groqClient;

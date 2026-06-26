@@ -108,27 +108,38 @@ export async function searchTavily(query, category = 'other') {
 }
 
 /**
- * Execute multiple category-tagged searches in parallel.
+ * Execute multiple category-tagged searches in parallel, but batched
+ * to avoid hitting Tavily rate limits (e.g. max 5 concurrent).
  *
  * @param {Array<{query: string, category: string}>} searchPlan
  * @returns {Promise<Array>}
  */
 export async function multiSearch(searchPlan) {
-  // Support both old format (string[]) and new format (object[])
   const normalized = searchPlan.map((item) =>
     typeof item === 'string'
       ? { query: item, category: 'other' }
       : item
   );
 
-  const results = await Promise.allSettled(
-    normalized.map(({ query, category }) => searchTavily(query, category))
-  );
-
   const allFindings = [];
-  for (const result of results) {
-    if (result.status === 'fulfilled') {
-      allFindings.push(...result.value);
+  const BATCH_SIZE = 4; // Run 4 searches at a time
+
+  for (let i = 0; i < normalized.length; i += BATCH_SIZE) {
+    const batch = normalized.slice(i, i + BATCH_SIZE);
+    
+    const results = await Promise.allSettled(
+      batch.map(({ query, category }) => searchTavily(query, category))
+    );
+
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        allFindings.push(...result.value);
+      }
+    }
+
+    // Small delay between batches to respect rate limits
+    if (i + BATCH_SIZE < normalized.length) {
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
   }
 

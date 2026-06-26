@@ -43,7 +43,7 @@ export async function researchNode(state) {
 
   // 3. Filter and deduplicate findings to avoid Groq 6000 TPM limit
   // We prioritize synthesized answers and high-quality sources (SEC, IR, Reuters, Bloomberg)
-  const filteredFindings = filterFindingsForTokenLimit(rawFindings, 30); // Keep top 30 snippets max
+  const filteredFindings = filterFindingsForTokenLimit(rawFindings, 20); // Keep top 20 snippets max
 
   onProgress?.('research', `Synthesizing ${filteredFindings.length} high-quality snippets into structured dataset...`);
 
@@ -110,8 +110,14 @@ function filterFindingsForTokenLimit(findings, maxItems) {
   const scored = findings.map(f => {
     let score = f.sourceQuality || 50;
     if (f.isSynthesized) score += 30; // Boost Tavily answers
-    if (f.statement.length > 200) score += 10;
-    return { ...f, sortScore: score };
+    if (f.statement.length > 150) score += 10;
+    
+    // TRUNCATE statement to save tokens! (250 chars max)
+    const shortStatement = f.statement.length > 250 
+      ? f.statement.substring(0, 250) + '...'
+      : f.statement;
+      
+    return { ...f, statement: shortStatement, sortScore: score };
   });
 
   scored.sort((a, b) => b.sortScore - a.sortScore);
