@@ -8,28 +8,25 @@ import { RISK_SYSTEM_PROMPT, buildRiskUserMessage } from '../prompts/riskPrompt.
  * Only reports risks supported by evidence.
  */
 export async function riskNode(state) {
-  const { companyName, validatedFindings, financialAnalysis, onProgress } = state;
+  const { companyName, validatedFindings, financialAnalysis, findings, onProgress } = state;
 
-  onProgress?.('risk', 'Analyzing investment risks...');
+  onProgress?.('risk', 'Evaluating investment risks...');
 
-  // Default to moderate-high risk if no evidence
   if (!validatedFindings || validatedFindings.length === 0) {
     return {
       riskAnalysis: {
         risks: [
           {
-            type: 'data_risk',
+            type: 'data_gap',
             title: 'Insufficient Research Data',
-            description:
-              'Unable to assess investment risks due to insufficient research findings.',
+            description: 'Unable to assess investment risks due to insufficient research findings.',
             severity: 'high',
             sourceUrls: [],
             mitigatingFactors: null,
           },
         ],
         riskScore: 70,
-        riskSummary:
-          'Risk assessment could not be completed due to insufficient research data.',
+        riskSummary: 'Risk assessment could not be completed due to insufficient research data.',
       },
     };
   }
@@ -38,7 +35,8 @@ export async function riskNode(state) {
     const userMessage = buildRiskUserMessage(
       companyName,
       validatedFindings,
-      financialAnalysis
+      financialAnalysis,
+      findings
     );
     const parsed = await callGroqJSON(RISK_SYSTEM_PROMPT, userMessage);
 

@@ -19,10 +19,23 @@ export const InvestmentState = Annotation.Root({
     default: () => null,
   }),
 
-  // ── Research Findings ──────────────────────────────────────────────────────
+  // ── Research Findings (Structured Dataset) ─────────────────────────────────
   findings: Annotation({
     reducer: (prev, next) => next ?? prev,
-    default: () => [],
+    default: () => ({
+      company: {},
+      business: {},
+      financials: {},
+      market: {},
+      competitors: [],
+      risks: {},
+      leadership: [],
+      growth: {},
+      recentNews: [],
+      verifiedFacts: [],
+      sources: [],
+      informationGaps: []
+    }),
   }),
 
   // ── Evidence Validated Findings ────────────────────────────────────────────

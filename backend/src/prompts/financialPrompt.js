@@ -44,21 +44,33 @@ Return a valid JSON object:
 
 Return ONLY the JSON object. No explanation text outside the JSON.`;
 
-export function buildFinancialUserMessage(companyName, validatedFindings) {
+export function buildFinancialUserMessage(companyName, validatedFindings, structuredFindings) {
+  // Use the validated facts
   const findingText = validatedFindings
     .filter((f) => f.confidence > 30)
     .map((f, i) => `
-[Finding ${i + 1}] (Confidence: ${f.confidence}%)
+[Fact ${i + 1}] (Confidence: ${f.confidence}%)
 Statement: ${f.statement}
 Sources: ${(f.sources || []).map((s) => s.url).join(', ') || 'No source'}
 `)
     .join('\n');
 
+  // Also include the structured financial and business data from the new knowledge base
+  const kbData = `
+STRUCTURED KNOWLEDGE BASE:
+Business: ${JSON.stringify(structuredFindings?.business || {})}
+Financials: ${JSON.stringify(structuredFindings?.financials || {})}
+Market: ${JSON.stringify(structuredFindings?.market || {})}
+Growth: ${JSON.stringify(structuredFindings?.growth || {})}
+  `.trim();
+
   return `Analyze the financial health of: "${companyName}"
 
-VERIFIED RESEARCH FINDINGS:
-${findingText || 'No high-confidence findings available.'}
+${kbData}
 
-Provide a structured financial analysis based ONLY on the above findings.
+VERIFIED RESEARCH FACTS:
+${findingText || 'No high-confidence facts available.'}
+
+Provide a structured financial analysis based ONLY on the above findings and knowledge base.
 Mark any missing financial data explicitly as "DATA UNAVAILABLE".`;
 }

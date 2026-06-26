@@ -10,7 +10,7 @@ import { FINANCIAL_SYSTEM_PROMPT, buildFinancialUserMessage } from '../prompts/f
  * Strict rule: If data is not in research findings, marks as DATA UNAVAILABLE.
  */
 export async function financialNode(state) {
-  const { companyName, validatedFindings, onProgress } = state;
+  const { companyName, validatedFindings, findings, onProgress } = state;
 
   onProgress?.('financial', 'Performing financial analysis...');
 
@@ -40,7 +40,7 @@ export async function financialNode(state) {
   }
 
   try {
-    const userMessage = buildFinancialUserMessage(companyName, validatedFindings);
+    const userMessage = buildFinancialUserMessage(companyName, validatedFindings, findings);
     const parsed = await callGroqJSON(FINANCIAL_SYSTEM_PROMPT, userMessage);
 
     // Normalize the strengths and weaknesses to always be objects with point + sourceUrls

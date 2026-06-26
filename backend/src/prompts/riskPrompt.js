@@ -31,7 +31,7 @@ OUTPUT — return ONLY this JSON:
 
 riskScore: 0 = very low risk, 100 = extremely high risk. Return ONLY the JSON.`;
 
-export function buildRiskUserMessage(companyName, validatedFindings, financialAnalysis) {
+export function buildRiskUserMessage(companyName, validatedFindings, financialAnalysis, structuredFindings) {
   // Use top 12 high-confidence findings only — keeps payload under 6000 TPM
   const topFindings = validatedFindings
     .filter((f) => f.confidence >= 40)
@@ -61,9 +61,17 @@ export function buildRiskUserMessage(companyName, validatedFindings, financialAn
     .slice(0, 4)
     .join(', ');
 
+  const kbRisks = `
+STRUCTURED KNOWLEDGE BASE RISKS:
+${JSON.stringify(structuredFindings?.risks || {})}
+Competitors: ${JSON.stringify(structuredFindings?.competitors || [])}
+  `.trim();
+
   return `Assess risks for: "${companyName}"
 
-FINDINGS (top ${topFindings.length}, ranked by confidence):
+${kbRisks}
+
+VERIFIED FACTS (top ${topFindings.length}, ranked by confidence):
 ${findingText || 'No findings available.'}
 
 WEAKNESSES FROM FINANCIAL ANALYSIS:
