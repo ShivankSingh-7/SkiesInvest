@@ -310,30 +310,26 @@ export function determineDecisionThreshold(
   evidenceCoverage,
   riskScore
 ) {
-  // Insufficient data to make a reliable call
-
-  if(confidence>60 && investmentScore<=40){
-    return 'Don\'t Invest'
-  }
-  if (confidence < 40) {
-    return 'INCONCLUSIVE';
+  // if investment score less than or equal to 40% and confidence score is greater than equal to 60% then return don't invest
+  if (investmentScore <= 40 && confidence >= 60) {
+    return "Don't Invest"; // Note: mapped to PASS downstream
   }
 
-  // Severe risk instantly invalidates investment
+  // if investment score is greater than 40 and less than 65 and confidence score greater than 50 % then return watch
+  if (investmentScore > 40 && investmentScore < 65 && confidence > 50) {
+    return 'WATCH';
+  }
+
+  // if investment score is greater than or equal to 65% and confidence score is greater than 70% then invest
+  if (investmentScore >= 65 && confidence > 70) {
+    return 'INVEST';
+  }
+
+  // Severe risk safety net (keeping this as good practice, though everything else falls to WATCH)
   if (riskScore >= 75) {
     return 'PASS';
   }
 
-  // Strong fundamentals + high confidence
-  if (investmentScore >= 65 && confidence >= 60) {
-    return 'INVEST';
-  }
-
-  // Borderline / decent fundamentals but need to monitor
-  if (investmentScore >= 50) {
-    return 'WATCH';
-  }
-
-  // Weak fundamentals
-  return 'PASS';
+  // and rest like solely investment score is high than watch and if solely confidence than also watch
+  return 'WATCH';
 }

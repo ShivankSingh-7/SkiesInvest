@@ -1,6 +1,6 @@
 import { callLLM } from '../llm/llmRouter.js';
 import { DECISION_SYSTEM_PROMPT, buildDecisionUserMessage } from '../prompts/decisionPrompt.js';
-import { calculateInvestmentScore } from '../utils/scoreCalculator.js';
+import { calculateInvestmentScore, determineDecisionThreshold } from '../utils/scoreCalculator.js';
 
 /**
  * Node 6: Investment Committee Agent
@@ -62,15 +62,28 @@ export async function decisionNode(state) {
       allowFallback: true
     });
 
-    // Validate decision — now includes WATCH
-    const validDecisions = ['INVEST', 'WATCH', 'PASS', 'INCONCLUSIVE'];
-    const decision = validDecisions.includes(parsed.decision)
-      ? parsed.decision
-      : 'INCONCLUSIVE';
-
     // Clamp confidence and informationGap
     const confidence    = Math.min(99, Math.max(0, parseInt(parsed.confidence, 10)    || 50));
     const informationGap = Math.min(100, Math.max(0, parseInt(parsed.informationGap, 10) || 0));
+
+    // CRITICAL OVERRIDE: The LLM frequently makes subjective decisions that violate the calculated investment score.
+    // We enforce the deterministic decision threshold based on the calculated score, risk, and coverage.
+    let decision = determineDecisionThreshold(
+      investmentScore,
+      confidence,
+      evidenceCoverage,
+      breakdown.deterministicRiskScore
+    );
+    
+    // Normalize "Don't Invest" to "PASS" for frontend consistency
+    if (decision === "Don't Invest") {
+      decision = 'PASS';
+    }
+
+    const validDecisions = ['INVEST', 'WATCH', 'PASS', 'INCONCLUSIVE'];
+    if (!validDecisions.includes(decision)) {
+      decision = 'INCONCLUSIVE';
+    }
 
     // Normalize reasoning
     const reasoning = (parsed.reasoning || []).map((r) => {

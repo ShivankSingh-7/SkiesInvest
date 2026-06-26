@@ -1,17 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Search, ArrowRight, Activity } from 'lucide-react';
 import MemoryHistory from '../components/MemoryHistory';
 
 const EXAMPLE_COMPANIES = [
   'Apple Inc', 'Tesla', 'OpenAI', 'Stripe', 'SpaceX',
   'Nvidia', 'Microsoft', 'Anthropic', 'Databricks', 'Palantir',
-];
-
-const FEATURES = [
-  { icon: '🧠', title: 'Evidence-Based AI', desc: 'Every claim is sourced from real articles. No hallucinations.' },
-  { icon: '🛡️', title: 'Confidence Scoring', desc: 'Each finding rated by source quality and verification count.' },
-  { icon: '📈', title: 'Investment Committee', desc: 'INVEST / PASS / NEED_MORE_DATA — never forced.' },
-  { icon: '⚡', title: 'Long-Term Memory', desc: 'Remembers past analyses and detects changes over time.' },
 ];
 
 export default function LandingPage() {
@@ -43,229 +37,85 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="bg-animated dot-grid" style={{ minHeight: '100vh', width: '100%' }}>
+    <div className="bg-subtle-grid" style={{ minHeight: '100vh', width: '100%', display: 'flex', flexDirection: 'column' }}>
 
       {/* ── Navbar ─────────────────────────────────────────────────────── */}
       <nav style={{
-        borderBottom: '1px solid rgba(255,255,255,0.07)',
-        background: 'rgba(5,13,26,0.85)',
-        backdropFilter: 'blur(14px)',
         position: 'sticky',
         top: 0,
         zIndex: 50,
         width: '100%',
+        padding: '24px 0',
       }}>
         <div style={{
-          maxWidth: '1100px',
+          maxWidth: '1200px',
           margin: '0 auto',
-          padding: '0 24px',
+          padding: '0 32px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          height: '60px',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: 10,
-              background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 16,
-            }}>📈</div>
-            <span style={{ fontWeight: 800, fontSize: 18, color: 'var(--text-primary)' }}>
-              Skies<span className="gradient-text">Invest</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Activity size={24} color="var(--text-primary)" />
+            <span style={{ fontWeight: 600, fontSize: 18, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+              SkiesInvest
             </span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-muted)' }}>
-            <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 7px #10b981' }} />
-            AI Agents Active
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-muted)' }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)' }} />
+            System Operational
           </div>
         </div>
       </nav>
 
       {/* ── Main Content ────────────────────────────────────────────────── */}
-      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '60px 24px 80px' }}>
-
-        {/* ── Hero Section ────────────────────────────────────────────── */}
-        <div className="fade-in" style={{ textAlign: 'center', marginBottom: 56 }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            padding: '6px 16px', borderRadius: 999, marginBottom: 28,
-            background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)',
-            color: '#60a5fa', fontSize: 12, fontWeight: 600,
-          }}>
-            🤖 LangGraph Multi-Agent System · Powered by Groq llama-3.3-70b
+      <div className="bg-soft-glow" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 24px', paddingBottom: '100px' }}>
+        
+        <div style={{ width: '100%', maxWidth: '720px', textAlign: 'center' }}>
+          
+          <div className="fade-in" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 999, border: '1px solid var(--border)', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 32 }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent-primary)' }} />
+            Investment Intelligence
           </div>
 
-          <h1 style={{
-            fontWeight: 900, lineHeight: 1.15, marginBottom: 20,
-            fontSize: 'clamp(38px, 5.5vw, 64px)',
-            color: 'var(--text-primary)',
-          }}>
-            <span className="gradient-text">AI Investment</span>
-            <br />Research Agent
+          <h1 className="fade-in-delay-1" style={{ fontSize: 'clamp(40px, 6vw, 56px)', fontWeight: 600, letterSpacing: '-0.03em', lineHeight: 1.1, color: 'var(--text-primary)', marginBottom: 24 }}>
+            Research any company using AI-powered financial analysis.
           </h1>
 
-          <p style={{
-            fontSize: 18, color: 'var(--text-secondary)',
-            maxWidth: 520, margin: '0 auto 14px', lineHeight: 1.75,
-          }}>
-            Evidence-based investment research. Every claim is sourced.
-            Every recommendation is justified by real data.
+          <p className="fade-in-delay-2" style={{ fontSize: 18, color: 'var(--text-secondary)', maxWidth: 540, margin: '0 auto 48px', lineHeight: 1.6, fontWeight: 400 }}>
+            Make data-driven decisions based on verifiable real-time evidence, market positioning, and financial strength.
           </p>
 
-          <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-            Returns{' '}
-            <strong style={{ color: '#34d399' }}>INVEST</strong>,{' '}
-            <strong style={{ color: '#fb7185' }}>PASS</strong>, or{' '}
-            <strong style={{ color: '#fbbf24' }}>NEED MORE DATA</strong>{' '}
-            — never hallucinated answers.
-          </p>
-        </div>
-
-        {/* ── Search Form Card ─────────────────────────────────────────── */}
-        <div className="glass-card fade-in fade-in-delay-1" style={{ padding: '36px 40px', marginBottom: 40 }}>
-          <label htmlFor="company-input" style={{
-            display: 'block', fontSize: 11, fontWeight: 700,
-            letterSpacing: '0.1em', color: 'var(--text-muted)',
-            marginBottom: 12, textTransform: 'uppercase',
-          }}>
-            Company Name
-          </label>
-
-          <form onSubmit={handleSubmit}>
-            <div style={{ display: 'flex', gap: 12 }}>
-              <div style={{ position: 'relative', flex: 1 }}>
-                <span style={{
-                  position: 'absolute', left: 16, top: '50%',
-                  transform: 'translateY(-50%)', fontSize: 16,
-                  pointerEvents: 'none',
-                }}>🔍</span>
-                <input
-                  ref={inputRef}
-                  id="company-input"
-                  type="text"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  placeholder="e.g. Apple Inc, Tesla, OpenAI, Stripe..."
-                  className="input-field"
-                  style={{ paddingLeft: 46 }}
-                  autoFocus
-                />
-              </div>
-              <button
-                id="analyze-btn"
-                type="submit"
-                className="btn-primary"
-                disabled={!companyName.trim()}
-                style={{ minWidth: 140, flexShrink: 0 }}
-              >
-                ⚡ Analyze
-              </button>
+          <form onSubmit={handleSubmit} className="fade-in-delay-2" style={{ display: 'flex', gap: 12, maxWidth: 540, margin: '0 auto' }}>
+            <div style={{ position: 'relative', flex: 1 }}>
+              <Search size={20} color="var(--text-muted)" style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+              <input
+                ref={inputRef}
+                type="text"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="e.g. Stripe, OpenAI, Apple..."
+                className="input-field-clean"
+                style={{ paddingLeft: 48 }}
+                required
+              />
             </div>
-
-            {/* Example chips */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 18, alignItems: 'center' }}>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Try:</span>
-              {EXAMPLE_COMPANIES.map((name) => (
-                <button
-                  key={name}
-                  type="button"
-                  onClick={() => { setCompanyName(name); inputRef.current?.focus(); }}
-                  style={{
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.09)',
-                    color: 'var(--text-secondary)',
-                    borderRadius: 999, padding: '4px 12px',
-                    fontSize: 12, cursor: 'pointer',
-                    transition: 'all 0.15s',
-                    fontFamily: 'inherit',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(59,130,246,0.4)';
-                    e.currentTarget.style.color = '#60a5fa';
-                    e.currentTarget.style.background = 'rgba(59,130,246,0.08)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)';
-                    e.currentTarget.style.color = 'var(--text-secondary)';
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
-                  }}
-                >
-                  {name}
-                </button>
-              ))}
-            </div>
+            <button type="submit" disabled={!companyName.trim()} className="btn-primary" style={{ padding: '0 24px', height: '56px' }}>
+              Analyze <ArrowRight size={18} />
+            </button>
           </form>
-        </div>
 
-        {/* ── Features Grid ────────────────────────────────────────────── */}
-        <div className="fade-in fade-in-delay-2" style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
-          gap: 16,
-          marginBottom: 56,
-        }}>
-          {FEATURES.map(({ icon, title, desc }) => (
-            <div key={title} className="glass-card" style={{ padding: '22px 20px', textAlign: 'center' }}>
-              <div style={{
-                width: 44, height: 44, borderRadius: 12, margin: '0 auto 14px',
-                background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
-              }}>{icon}</div>
-              <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 6, color: 'var(--text-primary)' }}>{title}</h3>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.55 }}>{desc}</p>
+          {/* ── Recent History ────────────────────────────────────────────── */}
+          {recentHistory.length > 0 && (
+            <div className="fade-in-delay-2" style={{ marginTop: 80, textAlign: 'left' }}>
+              <h3 style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: 16, fontWeight: 600 }}>
+                Recent Analyses
+              </h3>
+              <MemoryHistory history={recentHistory} />
             </div>
-          ))}
+          )}
         </div>
-
-        {/* ── Agent Pipeline Preview ────────────────────────────────────── */}
-        <div className="glass-card fade-in fade-in-delay-3" style={{ padding: '28px 32px', marginBottom: 40 }}>
-          <h2 style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: 20, textTransform: 'uppercase' }}>
-            AI Agent Pipeline
-          </h2>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexWrap: 'wrap', rowGap: 12 }}>
-            {['🧠 Memory', '🔍 Collect', '🧩 Consolidate', '📊 Evidence', '💰 Financial', '⚠️ Risk', '⚖️ Decision'].map((step, i, arr) => (
-              <div key={step} style={{ display: 'flex', alignItems: 'center' }}>
-                <div style={{
-                  padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                  background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)',
-                  color: '#60a5fa', whiteSpace: 'nowrap',
-                }}>
-                  {step}
-                </div>
-                {i < arr.length - 1 && (
-                  <span style={{ color: 'var(--text-muted)', margin: '0 6px', fontSize: 14 }}>→</span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Recent Analyses ───────────────────────────────────────────── */}
-        {recentHistory.length > 0 && (
-          <div className="fade-in fade-in-delay-4">
-            <h2 style={{
-              fontSize: 11, fontWeight: 700, letterSpacing: '0.1em',
-              color: 'var(--text-muted)', marginBottom: 16, textTransform: 'uppercase',
-              display: 'flex', alignItems: 'center', gap: 8,
-            }}>
-              🕐 Recent Analyses
-            </h2>
-            <MemoryHistory history={recentHistory} />
-          </div>
-        )}
       </div>
-
-      {/* ── Footer ─────────────────────────────────────────────────────── */}
-      <footer style={{
-        borderTop: '1px solid rgba(255,255,255,0.06)',
-        textAlign: 'center', padding: '20px 24px',
-        fontSize: 12, color: 'var(--text-muted)',
-      }}>
-        SkiesInvest · AI Investment Research · Not financial advice ·{' '}
-        <a href="https://github.com/ShivankSingh-7/SkiesInvest" target="_blank" rel="noopener noreferrer"
-          style={{ color: '#60a5fa', textDecoration: 'none' }}>GitHub ↗</a>
-      </footer>
     </div>
   );
 }
