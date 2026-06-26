@@ -61,10 +61,17 @@ export const InvestmentState = Annotation.Root({
   decision: Annotation({
     reducer: (prev, next) => next ?? prev,
     default: () => ({
-      decision: 'NEED_MORE_DATA',
+      decision: 'INCONCLUSIVE',
       confidence: 0,
       informationGap: 0,
       investmentScore: 0,
+      summary: '',
+      committeeSummary: '',
+      strengths: [],
+      weaknesses: [],
+      risks: [],
+      informationGaps: [],
+      sources: [],
       reasoning: [],
       verifiedFacts: [],
       unverifiedClaims: [],

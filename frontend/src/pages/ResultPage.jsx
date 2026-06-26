@@ -107,8 +107,14 @@ export default function ResultPage() {
 
   // ── Result ────────────────────────────────────────────────────────────
   const decisionColor =
-    result?.decision === 'INVEST' ? '#10b981' :
-    result?.decision === 'PASS' ? '#f43f5e' : '#f59e0b';
+    result?.decision === 'INVEST'       ? '#10b981' :
+    result?.decision === 'WATCH'        ? '#60a5fa' :
+    result?.decision === 'PASS'         ? '#f43f5e' : '#f59e0b';
+
+  const decisionLabel =
+    result?.decision === 'INVEST'       ? 'Invest' :
+    result?.decision === 'WATCH'        ? 'Watch' :
+    result?.decision === 'PASS'         ? 'Pass' : 'Inconclusive';
 
   return (
     <div className="bg-animated" style={{ minHeight: '100vh', width: '100%' }}>
@@ -147,9 +153,7 @@ export default function ResultPage() {
               <span style={{
                 fontSize: 12, fontWeight: 700, color: decisionColor, letterSpacing: '0.04em',
               }}>
-                {result?.decision === 'INVEST' ? 'Invest'
-                  : result?.decision === 'PASS' ? 'Pass'
-                  : 'Inconclusive'}
+              {decisionLabel}
               </span>
             </div>
             <button

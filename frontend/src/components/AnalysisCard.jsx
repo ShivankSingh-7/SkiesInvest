@@ -2,28 +2,40 @@ import ConfidenceBar from './ConfidenceBar';
 
 const DECISION_CONFIG = {
   INVEST: {
-    badgeClass: 'badge-invest',
     icon: '↑',
     label: 'INVEST',
     sublabel: 'Strong opportunity',
     color: '#10b981',
     desc: 'Strong evidence supports this investment',
   },
+  WATCH: {
+    icon: '◎',
+    label: 'WATCH',
+    sublabel: 'Monitor closely',
+    color: '#60a5fa',
+    desc: 'Promising signals with some uncertainty — worth monitoring',
+  },
   PASS: {
-    badgeClass: 'badge-pass',
     icon: '↓',
     label: 'PASS',
     sublabel: 'Not recommended',
     color: '#f43f5e',
-    desc: 'Evidence does not support investment at this time',
+    desc: 'Verified evidence does not support investment at this time',
   },
-  NEED_MORE_DATA: {
-    badgeClass: 'badge-need-data',
-    icon: '◎',
+  INCONCLUSIVE: {
+    icon: '—',
     label: 'INCONCLUSIVE',
-    sublabel: 'Limited evidence',
+    sublabel: 'Insufficient data',
     color: '#f59e0b',
-    desc: 'Available evidence is not sufficient for a confident decision',
+    desc: 'Not enough publicly verifiable information for a meaningful opinion',
+  },
+  // backwards-compat alias
+  NEED_MORE_DATA: {
+    icon: '—',
+    label: 'INCONCLUSIVE',
+    sublabel: 'Insufficient data',
+    color: '#f59e0b',
+    desc: 'Not enough publicly verifiable information for a meaningful opinion',
   },
 };
 
@@ -78,15 +90,22 @@ export default function AnalysisCard({ result }) {
   const {
     companyName, decision, confidence, informationGap, investmentScore, evidenceCoverage,
     reasoning = [], verifiedFacts = [], unverifiedClaims = [],
-    missingInformation = [], committeeSummary, memoryUsed, analysisCount,
+    missingInformation = [], informationGaps = [],
+    summary, committeeSummary,
+    memoryUsed, analysisCount,
     financialAnalysis = {},
   } = result;
 
-  const config = DECISION_CONFIG[decision] || DECISION_CONFIG.NEED_MORE_DATA;
+  // Use new summary field, fall back to old committeeSummary
+  const displaySummary = summary || committeeSummary || '';
+  // Use new informationGaps field, fall back to old missingInformation
+  const displayGaps = informationGaps.length > 0 ? informationGaps : missingInformation;
+
+  const config = DECISION_CONFIG[decision] || DECISION_CONFIG.INCONCLUSIVE;
 
   // Compute donut chart segments
   const verifiedPct = Math.min(100, Math.round(confidence));
-  const unverifiedPct = Math.min(100 - verifiedPct, Math.round((unverifiedClaims.length / Math.max(1, verifiedFacts.length + unverifiedClaims.length + missingInformation.length)) * 100));
+  const unverifiedPct = Math.min(100 - verifiedPct, Math.round((unverifiedClaims.length / Math.max(1, verifiedFacts.length + unverifiedClaims.length + displayGaps.length)) * 100));
   const missingPct = Math.max(0, 100 - verifiedPct - unverifiedPct);
 
   // Build SVG donut (r=40, circumference ≈ 251.3)
@@ -149,14 +168,14 @@ export default function AnalysisCard({ result }) {
         </p>
 
         {/* Committee Summary */}
-        {committeeSummary && (
+        {displaySummary && (
           <div style={{
             padding: '14px 18px', borderRadius: 12, marginBottom: 20, fontSize: 13,
             background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
             color: 'var(--text-secondary)', lineHeight: 1.7,
           }}>
             <strong style={{ color: 'var(--text-primary)' }}>Committee Summary: </strong>
-            {committeeSummary}
+            {displaySummary}
           </div>
         )}
 
@@ -352,23 +371,23 @@ export default function AnalysisCard({ result }) {
         </div>
       )}
 
-      {/* ── Information Gaps ───────────────────────────────────────────── */}
-      {missingInformation.length > 0 && (
+      {/* ── Information Gaps ──────────────────────────────────────────────── */}
+      {displayGaps.length > 0 && (
         <div className="glass-card fade-in" style={{ padding: '22px 28px' }}>
-          <h2 style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: '#fb7185', marginBottom: 8, textTransform: 'uppercase' }}>
-            ❌ Information Gaps ({missingInformation.length})
+          <h2 style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: '#f59e0b', marginBottom: 8, textTransform: 'uppercase' }}>
+            🔍 Information Gaps ({displayGaps.length})
           </h2>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14 }}>
             The following data could not be verified from available sources.
-            These gaps do not decrease our confidence in the verified facts above.
+            These gaps are tracked separately and do not reduce confidence in verified evidence.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {missingInformation.map((item, i) => (
+            {displayGaps.map((item, i) => (
               <div key={i} style={{
                 display: 'flex', gap: 12, padding: '10px 14px', borderRadius: 10,
-                background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.15)',
+                background: 'rgba(245,158,11,0.05)', border: '1px solid rgba(245,158,11,0.15)',
               }}>
-                <span style={{ color: '#f43f5e', flexShrink: 0, fontWeight: 700 }}>✕</span>
+                <span style={{ color: '#f59e0b', flexShrink: 0, fontSize: 12 }}>‒</span>
                 <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.55 }}>{item}</p>
               </div>
             ))}

@@ -5,8 +5,8 @@ import { calculateInvestmentScore } from '../utils/scoreCalculator.js';
 /**
  * Node 6: Investment Committee Agent
  *
- * The final decision-making node. Acts as a senior investment analyst.
- * Returns INVEST / PASS / NEED_MORE_DATA based on all evidence.
+ * The final decision-making node. Acts as a senior investment committee.
+ * Returns INVEST / WATCH / PASS / INCONCLUSIVE based on all evidence.
  */
 export async function decisionNode(state) {
   const {
@@ -30,7 +30,7 @@ export async function decisionNode(state) {
 
   onProgress?.(
     'decision',
-    `Investment score calculated: ${investmentScore}/100 — committee making final decision...`,
+    `Investment score: ${investmentScore}/100 — committee making final decision...`,
     { investmentScore, breakdown }
   );
 
@@ -46,21 +46,19 @@ export async function decisionNode(state) {
 
     const parsed = await callGroqJSON(DECISION_SYSTEM_PROMPT, userMessage);
 
-    // Validate decision value
-    const validDecisions = ['INVEST', 'PASS', 'NEED_MORE_DATA'];
+    // Validate decision — now includes WATCH
+    const validDecisions = ['INVEST', 'WATCH', 'PASS', 'INCONCLUSIVE'];
     const decision = validDecisions.includes(parsed.decision)
       ? parsed.decision
-      : 'NEED_MORE_DATA';
+      : 'INCONCLUSIVE';
 
     // Clamp confidence and informationGap
-    const confidence = Math.min(99, Math.max(0, parseInt(parsed.confidence, 10) || 50));
+    const confidence    = Math.min(99, Math.max(0, parseInt(parsed.confidence, 10)    || 50));
     const informationGap = Math.min(100, Math.max(0, parseInt(parsed.informationGap, 10) || 0));
 
-    // Normalize reasoning items
+    // Normalize reasoning
     const reasoning = (parsed.reasoning || []).map((r) => {
-      if (typeof r === 'string') {
-        return { point: r, type: 'neutral', sourceUrls: [], weight: 'medium' };
-      }
+      if (typeof r === 'string') return { point: r, type: 'neutral', sourceUrls: [], weight: 'medium' };
       return {
         point: r.point || r.statement || String(r),
         type: r.type || 'neutral',
@@ -69,6 +67,7 @@ export async function decisionNode(state) {
       };
     });
 
+    // Normalize verifiedFacts
     const verifiedFacts = (parsed.verifiedFacts || []).map((f) => {
       if (typeof f === 'string') return { fact: f, sourceUrls: [] };
       return { fact: f.fact || String(f), sourceUrls: f.sourceUrls || [] };
@@ -80,11 +79,19 @@ export async function decisionNode(state) {
       informationGap,
       investmentScore,
       scoreBreakdown: breakdown,
+      // New fields from updated prompt
+      summary: parsed.summary || parsed.committeeSummary || '',
+      strengths: parsed.strengths || [],
+      weaknesses: parsed.weaknesses || [],
+      risks: parsed.risks || [],
+      informationGaps: parsed.informationGaps || parsed.missingInformation || [],
+      sources: parsed.sources || [],
       reasoning,
       verifiedFacts,
+      // Keep backwards-compatible aliases
+      committeeSummary: parsed.summary || parsed.committeeSummary || '',
+      missingInformation: parsed.informationGaps || parsed.missingInformation || [],
       unverifiedClaims: parsed.unverifiedClaims || [],
-      missingInformation: parsed.missingInformation || [],
-      committeeSummary: parsed.committeeSummary || '',
     };
 
     onProgress?.(
@@ -97,26 +104,29 @@ export async function decisionNode(state) {
   } catch (err) {
     console.error('[DecisionNode] Error:', err.message);
 
-    // Conservative fallback
     return {
       decision: {
-        decision: 'NEED_MORE_DATA',
+        decision: 'INCONCLUSIVE',
         confidence: 0,
         informationGap: 100,
         investmentScore,
         scoreBreakdown: breakdown,
-        reasoning: [
-          {
-            point: 'Decision engine encountered an error — manual review required',
-            type: 'negative',
-            sourceUrls: [],
-            weight: 'high',
-          },
-        ],
+        summary: 'Automated decision failed. Please review manually.',
+        committeeSummary: 'Automated decision failed. Please review manually.',
+        strengths: [],
+        weaknesses: [],
+        risks: [],
+        informationGaps: [`Decision analysis failed: ${err.message}`],
+        missingInformation: [`Decision analysis failed: ${err.message}`],
+        sources: [],
+        reasoning: [{
+          point: 'Decision engine encountered an error — manual review required',
+          type: 'negative',
+          sourceUrls: [],
+          weight: 'high',
+        }],
         verifiedFacts: [],
         unverifiedClaims: [],
-        missingInformation: [`Decision analysis failed: ${err.message}`],
-        committeeSummary: 'Automated decision failed. Please review manually.',
       },
       errors: [`Decision node failed: ${err.message}`],
     };
