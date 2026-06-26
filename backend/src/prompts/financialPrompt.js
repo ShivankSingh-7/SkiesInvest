@@ -42,9 +42,18 @@ Return a valid JSON object:
   "analystNote": "Brief professional assessment note"
 }
 
-Return ONLY the JSON object. No explanation text outside the JSON.`;
+Return ONLY valid JSON.
+The response MUST comply with RFC 8259.
+Do NOT use Markdown.
+Do NOT wrap JSON inside markdown code blocks.
+Do NOT include explanations.
+Do NOT include comments.
+Do NOT include trailing commas.
+Every property name MUST use double quotes.
+The response must be directly parsable using JavaScript JSON.parse().
+Output ONLY the JSON object.`;
 
-export function buildFinancialUserMessage(companyName, validatedFindings, structuredFindings) {
+export function buildFinancialUserMessage(companyName, validatedFindings, { financials, growth, market }) {
   // Use the validated facts
   const findingText = validatedFindings
     .filter((f) => f.confidence > 30)
@@ -58,10 +67,9 @@ Sources: ${(f.sources || []).map((s) => s.url).join(', ') || 'No source'}
   // Also include the structured financial and business data from the new knowledge base
   const kbData = `
 STRUCTURED KNOWLEDGE BASE:
-Business: ${JSON.stringify(structuredFindings?.business || {})}
-Financials: ${JSON.stringify(structuredFindings?.financials || {})}
-Market: ${JSON.stringify(structuredFindings?.market || {})}
-Growth: ${JSON.stringify(structuredFindings?.growth || {})}
+Financials: ${JSON.stringify(financials || {})}
+Market: ${JSON.stringify(market || {})}
+Growth: ${JSON.stringify(growth || {})}
   `.trim();
 
   return `Analyze the financial health of: "${companyName}"

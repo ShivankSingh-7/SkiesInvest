@@ -88,7 +88,7 @@ export default function AnalysisCard({ result }) {
   if (!result) return null;
 
   const {
-    companyName, decision, confidence, informationGap, investmentScore, evidenceCoverage,
+    companyName, companyStatus, decision, confidence, informationGap, investmentScore, evidenceCoverage,
     reasoning = [], verifiedFacts = [], unverifiedClaims = [],
     missingInformation = [], informationGaps = [],
     summary, committeeSummary,
@@ -137,8 +137,18 @@ export default function AnalysisCard({ result }) {
             <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase' }}>
               Investment Recommendation
             </p>
-            <h1 style={{ fontSize: 26, fontWeight: 900, color: 'var(--text-primary)', marginBottom: 8 }}>
+            <h1 style={{ fontSize: 26, fontWeight: 900, color: 'var(--text-primary)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
               {companyName}
+              {companyStatus && String(companyStatus).toLowerCase().includes('private') && (
+                <span style={{
+                  fontSize: 10, padding: '3px 8px', borderRadius: 6,
+                  background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b',
+                  border: '1px solid rgba(245, 158, 11, 0.2)', fontWeight: 700,
+                  textTransform: 'uppercase', letterSpacing: '0.05em'
+                }}>
+                  Not Listed
+                </span>
+              )}
             </h1>
             {memoryUsed && (
               <span style={{

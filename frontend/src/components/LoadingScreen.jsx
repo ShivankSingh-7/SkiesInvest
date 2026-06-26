@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 
 const STAGES = [
   { id: 'memory',    label: 'Memory Retrieval',    icon: '🧠', desc: 'Checking previous analyses' },
-  { id: 'research',  label: 'Research Agent',       icon: '🔍', desc: 'Searching web sources' },
+  { id: 'research',  label: 'Research Collector',   icon: '🔍', desc: 'Searching web sources' },
+  { id: 'consolidator', label: 'Knowledge Consolidator', icon: '🧠', desc: 'Merging facts & building JSON' },
   { id: 'evidence',  label: 'Evidence Validation',  icon: '📊', desc: 'Validating & scoring sources' },
   { id: 'financial', label: 'Financial Analysis',   icon: '💰', desc: 'Analyzing financials' },
   { id: 'risk',      label: 'Risk Assessment',      icon: '⚠️', desc: 'Assessing investment risks' },

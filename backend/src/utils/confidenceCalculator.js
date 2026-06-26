@@ -12,9 +12,10 @@ import { getSourceQuality } from './sourceRanking.js';
  * Calculate confidence for a single finding
  *
  * @param {Array<{url: string, title: string}>} sources
+ * @param {string} [companyName] - Optional company name to apply reputation boost
  * @returns {{ confidence: number, sourceCount: number, avgQuality: number }}
  */
-export function calculateFindingConfidence(sources) {
+export function calculateFindingConfidence(sources, companyName = '') {
   if (!sources || sources.length === 0) {
     return { confidence: 0, sourceCount: 0, avgQuality: 0 };
   }
@@ -23,30 +24,34 @@ export function calculateFindingConfidence(sources) {
   const qualityScores = sources.map((s) => getSourceQuality(s.url).score);
   const avgQuality = qualityScores.reduce((a, b) => a + b, 0) / qualityScores.length;
 
-  // Base confidence from source count
+  // Base confidence from source count (Boosted to prevent penalizing single-source unverified info too much)
   let baseConfidence;
-  if (sourceCount >= 5) {
+  if (sourceCount >= 3) {
     baseConfidence = 90;
-  } else if (sourceCount >= 3) {
-    baseConfidence = 75;
   } else if (sourceCount === 2) {
-    baseConfidence = 60;
+    baseConfidence = 75;
   } else {
-    baseConfidence = 35;
+    baseConfidence = 60; // Up from 35
   }
 
   // Quality multiplier — high quality sources boost confidence
-  // avgQuality 80-100 → multiplier 1.05
-  // avgQuality 60-79  → multiplier 1.00
-  // avgQuality 40-59  → multiplier 0.90
-  // avgQuality 20-39  → multiplier 0.75
   let qualityMultiplier;
   if (avgQuality >= 80) qualityMultiplier = 1.05;
   else if (avgQuality >= 60) qualityMultiplier = 1.00;
   else if (avgQuality >= 40) qualityMultiplier = 0.90;
   else qualityMultiplier = 0.75;
 
-  const confidence = Math.min(99, Math.round(baseConfidence * qualityMultiplier));
+  let confidence = Math.round(baseConfidence * qualityMultiplier);
+
+  // Reputation Boost: Mega-cap blue chips get the benefit of the doubt for unverified web data
+  const blueChips = ['microsoft', 'apple', 'nvidia', 'alphabet', 'google', 'amazon', 'meta', 'berkshire', 'tesla', 'broadcom', 'lilly', 'tsmc'];
+  const isBlueChip = blueChips.some(bc => String(companyName).toLowerCase().includes(bc));
+  
+  if (isBlueChip) {
+    confidence += 15; // Upper hand reputation boost
+  }
+
+  confidence = Math.min(99, Math.max(0, confidence));
 
   return { confidence, sourceCount, avgQuality: Math.round(avgQuality) };
 }

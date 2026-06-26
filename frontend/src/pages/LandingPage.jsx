@@ -224,7 +224,7 @@ export default function LandingPage() {
             AI Agent Pipeline
           </h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexWrap: 'wrap', rowGap: 12 }}>
-            {['🧠 Memory', '🔍 Research', '📊 Evidence', '💰 Financial', '⚠️ Risk', '⚖️ Decision'].map((step, i, arr) => (
+            {['🧠 Memory', '🔍 Collect', '🧩 Consolidate', '📊 Evidence', '💰 Financial', '⚠️ Risk', '⚖️ Decision'].map((step, i, arr) => (
               <div key={step} style={{ display: 'flex', alignItems: 'center' }}>
                 <div style={{
                   padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,

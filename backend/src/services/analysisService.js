@@ -49,6 +49,7 @@ export async function runAnalysis(companyName, onProgress = () => {}) {
   // Assemble the response
   return {
     companyName,
+    companyStatus: finalState.findings?.company?.status || 'unknown',
     decision: finalState.decision?.decision || 'NEED_MORE_DATA',
     confidence: finalState.decision?.confidence || 0,
     investmentScore: finalState.decision?.investmentScore || 0,

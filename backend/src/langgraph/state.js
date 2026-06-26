@@ -19,7 +19,13 @@ export const InvestmentState = Annotation.Root({
     default: () => null,
   }),
 
-  // ── Research Findings (Structured Dataset) ─────────────────────────────────
+  // ── Raw Findings (From Research Collector) ─────────────────────────────────
+  rawFindings: Annotation({
+    reducer: (prev, next) => next ?? prev,
+    default: () => [],
+  }),
+
+  // ── Research Findings (Structured Dataset from Consolidator) ───────────────
   findings: Annotation({
     reducer: (prev, next) => next ?? prev,
     default: () => ({

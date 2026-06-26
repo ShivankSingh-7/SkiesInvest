@@ -21,9 +21,13 @@ export default function ResultPage() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const fetchedRef = useRef(null);
 
   useEffect(() => {
     if (!companyName) { navigate('/'); return; }
+    if (fetchedRef.current === companyName) return;
+    fetchedRef.current = companyName;
+
     setStatus('loading');
     setProgressLog([]);
     setResult(null);

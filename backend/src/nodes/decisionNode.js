@@ -1,4 +1,4 @@
-import { callGroqJSON } from '../llm/groq.js';
+import { callLLM } from '../llm/llmRouter.js';
 import { DECISION_SYSTEM_PROMPT, buildDecisionUserMessage } from '../prompts/decisionPrompt.js';
 import { calculateInvestmentScore } from '../utils/scoreCalculator.js';
 
@@ -15,6 +15,7 @@ export async function decisionNode(state) {
     financialAnalysis,
     riskAnalysis,
     evidenceCoverage,
+    findings,
     onProgress,
   } = state;
 
@@ -22,11 +23,19 @@ export async function decisionNode(state) {
 
   // Calculate investment score
   const { investmentScore, breakdown } = calculateInvestmentScore({
+    companyName,
     financialAnalysis,
     riskAnalysis,
     evidenceCoverage,
     validatedFindings,
   });
+  
+  // CRITICAL OVERRIDE: The LLM frequently hallucinates its own riskScore despite strict prompts.
+  // We must OVERRIDE the raw LLM riskScore with our perfectly calculated deterministic score 
+  // before the final decision prompt is executed and state is returned.
+  if (riskAnalysis) {
+    riskAnalysis.riskScore = breakdown.deterministicRiskScore || 0;
+  }
 
   onProgress?.(
     'decision',
@@ -42,9 +51,16 @@ export async function decisionNode(state) {
       validatedFindings,
       financialAnalysis,
       riskAnalysis,
+      informationGaps: findings?.informationGaps || [],
     });
 
-    const parsed = await callGroqJSON(DECISION_SYSTEM_PROMPT, userMessage);
+    const parsed = await callLLM({
+      taskType: 'decision',
+      systemPrompt: DECISION_SYSTEM_PROMPT,
+      userMessage,
+      maxTokens: 2000,
+      allowFallback: true
+    });
 
     // Validate decision — now includes WATCH
     const validDecisions = ['INVEST', 'WATCH', 'PASS', 'INCONCLUSIVE'];

@@ -1,7 +1,4 @@
 import { multiSearch } from '../tools/tavilyTool.js';
-import { callGroqJSON } from '../llm/groq.js';
-import { RESEARCH_SYSTEM_PROMPT, buildResearchUserMessage } from '../prompts/researchPrompt.js';
-
 /**
  * Node 2: Research Agent Redesigned
  *
@@ -29,72 +26,39 @@ export async function researchNode(state) {
   } catch (err) {
     console.error('[ResearchNode] Search error:', err.message);
     return {
-      findings: getEmptyFindingsObject(),
+      rawFindings: [],
       errors: [`Research search failed: ${err.message}`],
     };
   }
 
   if (rawFindings.length === 0) {
     return {
-      findings: getEmptyFindingsObject(),
+      rawFindings: [],
       errors: ['No search results found — Tavily returned empty results'],
     };
   }
 
-  // 3. Filter and deduplicate findings to avoid Groq 6000 TPM limit
-  // We prioritize synthesized answers and high-quality sources (SEC, IR, Reuters, Bloomberg)
+  // 3. Filter and deduplicate findings to avoid extreme TPM bloat
   const filteredFindings = filterFindingsForTokenLimit(rawFindings, 20); // Keep top 20 snippets max
 
-  onProgress?.('research', `Synthesizing ${filteredFindings.length} high-quality snippets into structured dataset...`);
+  onProgress?.('research', `Research collection complete: Retained ${filteredFindings.length} high-quality sources. Passing to Knowledge Consolidator...`);
 
-  // 4. Use Groq to build the structured dataset
-  try {
-    const userMessage = buildResearchUserMessage(companyName, filteredFindings);
-    const parsed = await callGroqJSON(RESEARCH_SYSTEM_PROMPT, userMessage);
-
-    // Ensure all top-level keys exist in case LLM missed them
-    const findings = {
-      ...getEmptyFindingsObject(),
-      ...parsed,
-    };
-
-    onProgress?.(
-      'research',
-      `Research complete: Extracted ${findings.verifiedFacts?.length || 0} verified facts.`,
-      { factCount: findings.verifiedFacts?.length || 0 }
-    );
-
-    return { findings };
-  } catch (err) {
-    console.error('[ResearchNode] LLM synthesis error:', err.message);
-    return {
-      findings: getEmptyFindingsObject(),
-      errors: [`LLM structured synthesis failed: ${err.message}`],
-    };
-  }
+  return { rawFindings: filteredFindings };
 }
 
 /**
- * Builds the 16 specific targeted queries for the research phase
+ * Builds 8 specific targeted queries for the research phase to save API limits.
  */
 function buildComprehensiveSearchPlan(companyName) {
   return [
     { query: `${companyName} business overview`, category: 'business' },
-    { query: `${companyName} investor relations`, category: 'financials' },
-    { query: `${companyName} annual report`, category: 'financials' },
-    { query: `${companyName} earnings`, category: 'financials' },
-    { query: `${companyName} Reuters`, category: 'news' },
-    { query: `${companyName} SEC filing`, category: 'financials' },
-    { query: `${companyName} competition`, category: 'competitors' },
-    { query: `${companyName} products`, category: 'business' },
+    { query: `${companyName} earnings investor relations`, category: 'financials' },
+    { query: `${companyName} Reuters news`, category: 'news' },
+    { query: `${companyName} major competitors`, category: 'competitors' },
     { query: `${companyName} market share`, category: 'market' },
-    { query: `${companyName} financial performance`, category: 'financials' },
-    { query: `${companyName} risks`, category: 'risks' },
-    { query: `${companyName} acquisitions`, category: 'growth' },
-    { query: `${companyName} partnerships`, category: 'growth' },
-    { query: `${companyName} AI strategy`, category: 'growth' },
-    { query: `${companyName} growth`, category: 'growth' },
-    { query: `${companyName} valuation`, category: 'market' },
+    { query: `${companyName} main risks`, category: 'risks' },
+    { query: `${companyName} AI strategy growth`, category: 'growth' },
+    { query: `${companyName} recent financial performance`, category: 'financials' },
   ];
 }
 
@@ -146,22 +110,4 @@ function filterFindingsForTokenLimit(findings, maxItems) {
   return unique;
 }
 
-/**
- * Returns the default empty JSON structure required by downstream nodes
- */
-function getEmptyFindingsObject() {
-  return {
-    company: {},
-    business: {},
-    financials: {},
-    market: {},
-    competitors: [],
-    risks: {},
-    leadership: [],
-    growth: {},
-    recentNews: [],
-    verifiedFacts: [],
-    sources: [],
-    informationGaps: []
-  };
-}
+

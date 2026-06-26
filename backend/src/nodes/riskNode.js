@@ -1,4 +1,4 @@
-import { callGroqJSON } from '../llm/groq.js';
+import { callLLM } from '../llm/llmRouter.js';
 import { RISK_SYSTEM_PROMPT, buildRiskUserMessage } from '../prompts/riskPrompt.js';
 
 /**
@@ -38,7 +38,14 @@ export async function riskNode(state) {
       financialAnalysis,
       findings
     );
-    const parsed = await callGroqJSON(RISK_SYSTEM_PROMPT, userMessage);
+    
+    const parsed = await callLLM({
+      taskType: 'risk',
+      systemPrompt: RISK_SYSTEM_PROMPT,
+      userMessage,
+      maxTokens: 2000,
+      allowFallback: true
+    });
 
     // Normalize risk objects
     const risks = (parsed.risks || []).map((risk) => ({
@@ -48,6 +55,9 @@ export async function riskNode(state) {
       severity: risk.severity || 'medium',
       sourceUrls: risk.sourceUrls || [],
       mitigatingFactors: risk.mitigatingFactors || null,
+      category: risk.category || (risk.hasQuantitativeImpact ? 'Quantitative Risk' : 'Risk Indicator'),
+      hasQuantitativeImpact: risk.hasQuantitativeImpact === true,
+      financialEvidence: risk.financialEvidence || null,
     }));
 
     // Validate risk score is in range

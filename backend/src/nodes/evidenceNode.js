@@ -60,7 +60,7 @@ export async function evidenceNode(state) {
       displayName: getSourceDisplayName(url),
     }));
 
-    const { confidence, sourceCount, avgQuality } = calculateFindingConfidence(sources);
+    const { confidence, sourceCount, avgQuality } = calculateFindingConfidence(sources, companyName);
 
     validatedFindings.push({
       statement: f.fact || String(f),

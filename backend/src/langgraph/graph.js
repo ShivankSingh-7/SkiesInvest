@@ -8,6 +8,8 @@ import { riskNode } from '../nodes/riskNode.js';
 import { decisionNode } from '../nodes/decisionNode.js';
 import { memorySaveNode } from '../nodes/memoryNode.js';
 
+import { consolidatorNode } from '../nodes/consolidatorNode.js';
+
 /**
  * Build and compile the SkiesInvest LangGraph workflow.
  *
@@ -15,6 +17,7 @@ import { memorySaveNode } from '../nodes/memoryNode.js';
  *   START
  *     → memoryRetrieval   (load previous analysis from MongoDB)
  *     → research          (Tavily multi-query research)
+ *     → consolidator      (Groq LLM structured JSON conversion)
  *     → evidenceValidation (confidence scoring per finding)
  *     → financialAnalysis  (Groq LLM structured analysis)
  *     → riskAnalysis       (Groq LLM risk scoring)
@@ -27,6 +30,7 @@ export function buildInvestmentGraph() {
     // ── Add Nodes ─────────────────────────────────────────────────────────────
     .addNode('memoryRetrieval', memoryRetrievalNode)
     .addNode('research', researchNode)
+    .addNode('consolidator', consolidatorNode)
     .addNode('evidenceValidation', evidenceNode)
     .addNode('financialAnalysisNode', financialNode)
     .addNode('riskAnalysisNode', riskNode)
@@ -36,7 +40,8 @@ export function buildInvestmentGraph() {
     // ── Define Edges ──────────────────────────────────────────────────────────
     .addEdge(START, 'memoryRetrieval')
     .addEdge('memoryRetrieval', 'research')
-    .addEdge('research', 'evidenceValidation')
+    .addEdge('research', 'consolidator')
+    .addEdge('consolidator', 'evidenceValidation')
     .addEdge('evidenceValidation', 'financialAnalysisNode')
     .addEdge('financialAnalysisNode', 'riskAnalysisNode')
     .addEdge('riskAnalysisNode', 'investmentCommittee')

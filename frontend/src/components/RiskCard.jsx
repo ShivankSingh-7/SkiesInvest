@@ -9,8 +9,8 @@ const RISK_TYPES = {
 };
 
 function RiskMeter({ score }) {
-  const color = score >= 70 ? '#f43f5e' : score >= 40 ? '#f59e0b' : '#10b981';
-  const label = score >= 70 ? 'HIGH RISK' : score >= 40 ? 'MODERATE RISK' : 'LOW RISK';
+  const color = score >= 61 ? '#f43f5e' : score >= 41 ? '#f59e0b' : score >= 21 ? '#60a5fa' : '#10b981';
+  const label = score >= 81 ? 'CRITICAL RISK' : score >= 61 ? 'HIGH RISK' : score >= 41 ? 'ELEVATED RISK' : score >= 21 ? 'MODERATE RISK' : 'LOW RISK';
 
   return (
     <div className="glass-card" style={{ padding: '24px 28px', marginBottom: 20 }}>
@@ -103,6 +103,15 @@ function RiskItem({ risk, index }) {
             }}>
               {severity.toUpperCase()}
             </span>
+            {!risk.hasQuantitativeImpact && (
+              <span style={{
+                fontSize: 9, fontWeight: 600, padding: '2px 7px', borderRadius: 999,
+                background: 'rgba(139,92,246,0.1)', color: '#a78bfa',
+                border: '1px solid rgba(139,92,246,0.2)',
+              }}>
+                INDICATOR
+              </span>
+            )}
           </div>
           <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 6, color: 'var(--text-primary)' }}>
             {risk.title}
@@ -147,10 +156,18 @@ export default function RiskCard({ riskAnalysis = {} }) {
   const businessRisks = risks.filter((r) => r.type !== 'data_risk' && r.type !== 'data_gap');
   const dataGaps = risks.filter((r) => r.type === 'data_risk' || r.type === 'data_gap');
 
-  const high = businessRisks.filter((r) => r.severity === 'high');
-  const med  = businessRisks.filter((r) => r.severity === 'medium');
-  const low  = businessRisks.filter((r) => r.severity === 'low');
-  const sortedRisks = [...high, ...med, ...low];
+  // Separate quantitative risks from risk indicators
+  const quantitativeRisks = businessRisks.filter((r) => r.hasQuantitativeImpact);
+  const riskIndicators = businessRisks.filter((r) => !r.hasQuantitativeImpact);
+
+  const sortByPriority = (list) => {
+    const high = list.filter((r) => r.severity === 'high');
+    const med  = list.filter((r) => r.severity === 'medium');
+    const low  = list.filter((r) => r.severity === 'low');
+    return [...high, ...med, ...low];
+  };
+  const sortedQuantitative = sortByPriority(quantitativeRisks);
+  const sortedIndicators = sortByPriority(riskIndicators);
 
   return (
     <div>
@@ -165,15 +182,46 @@ export default function RiskCard({ riskAnalysis = {} }) {
         </div>
       )}
 
-      {sortedRisks.length === 0 ? (
+      {businessRisks.length === 0 ? (
         <div className="glass-card" style={{ padding: 40, textAlign: 'center' }}>
           <p style={{ fontSize: 32, marginBottom: 8 }}>✅</p>
           <p style={{ color: 'var(--text-secondary)' }}>No specific risks identified in research</p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {sortedRisks.map((risk, i) => <RiskItem key={i} risk={risk} index={i} />)}
-        </div>
+        <>
+          {/* Quantitative Risks — these affect the composite score */}
+          {sortedQuantitative.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <p style={{
+                fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--text-muted)',
+                textTransform: 'uppercase', marginBottom: 8,
+              }}>
+                📊 Quantitative Risks ({sortedQuantitative.length}) — Included in Composite Score
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {sortedQuantitative.map((risk, i) => <RiskItem key={`q-${i}`} risk={risk} index={i} />)}
+              </div>
+            </div>
+          )}
+
+          {/* Risk Indicators — qualitative, NOT in composite score */}
+          {sortedIndicators.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <p style={{
+                fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--text-muted)',
+                textTransform: 'uppercase', marginBottom: 8,
+              }}>
+                🔎 Risk Indicators ({sortedIndicators.length}) — Qualitative Observations
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {sortedIndicators.map((risk, i) => <RiskItem key={`i-${i}`} risk={risk} index={i} />)}
+              </div>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 10, fontStyle: 'italic', lineHeight: 1.6 }}>
+                These observations are provided for investor awareness and are NOT included in the Financial Risk Score unless supported by measurable financial evidence.
+              </p>
+            </div>
+          )}
+        </>
       )}
 
       {/* Data gaps — shown as a compact, subdued section at the bottom */}

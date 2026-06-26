@@ -80,7 +80,16 @@ confidence: 0-100 based ONLY on verified source quality and count.
 informationGap: 0-100 representing what percentage of relevant data is missing.
 confidence + informationGap should approximately equal 100.
 
-Return ONLY the JSON object. No text outside the JSON.`;
+Return ONLY valid JSON.
+The response MUST comply with RFC 8259.
+Do NOT use Markdown.
+Do NOT wrap JSON inside markdown code blocks.
+Do NOT include explanations.
+Do NOT include comments.
+Do NOT include trailing commas.
+Every property name MUST use double quotes.
+The response must be directly parsable using JavaScript JSON.parse().
+Output ONLY the JSON object.`;
 
 export function buildDecisionUserMessage({
   companyName,
@@ -89,6 +98,7 @@ export function buildDecisionUserMessage({
   validatedFindings,
   financialAnalysis,
   riskAnalysis,
+  informationGaps,
 }) {
   const topFindings = validatedFindings
     .filter((f) => f.confidence >= 50)
@@ -112,7 +122,7 @@ export function buildDecisionUserMessage({
     .map((r) => `• [${r.severity?.toUpperCase()}] ${r.title}: ${r.description?.slice(0, 100)}`)
     .join('\n');
 
-  const gaps = (financialAnalysis?.unavailableData || [])
+  const gaps = (informationGaps || [])
     .slice(0, 5)
     .map((u) => `• ${u}`)
     .join('\n');

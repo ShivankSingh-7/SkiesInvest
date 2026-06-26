@@ -1,47 +1,41 @@
-import { callGroqJSON } from '../llm/groq.js';
+import { callLLM } from '../llm/llmRouter.js';
 import { FINANCIAL_SYSTEM_PROMPT, buildFinancialUserMessage } from '../prompts/financialPrompt.js';
 
 /**
  * Node 4: Financial Analysis Agent
  *
- * Uses Groq LLM to analyze research findings for financial health,
- * strengths, weaknesses, and key metrics.
- *
- * Strict rule: If data is not in research findings, marks as DATA UNAVAILABLE.
+ * Evaluates the financial health, business model, and market position.
+ * Returns strengths, weaknesses, and a structured analysis based ONLY on verified findings.
  */
 export async function financialNode(state) {
   const { companyName, validatedFindings, findings, onProgress } = state;
 
-  onProgress?.('financial', 'Performing financial analysis...');
+  onProgress?.('financial', 'Analyzing financials, business model, and market position...');
 
   if (!validatedFindings || validatedFindings.length === 0) {
-    onProgress?.('financial', 'No validated findings for financial analysis');
     return {
       financialAnalysis: {
         strengths: [],
         weaknesses: [],
-        metrics: {
-          revenueGrowth: 'DATA UNAVAILABLE',
-          profitability: 'DATA UNAVAILABLE',
-          marketPosition: 'DATA UNAVAILABLE',
-          fundingStatus: 'DATA UNAVAILABLE',
-          competitiveAdvantage: 'DATA UNAVAILABLE',
-          businessModel: 'DATA UNAVAILABLE',
-        },
-        unavailableData: [
-          'Revenue data unavailable',
-          'Profitability data unavailable',
-          'Market position data unavailable',
-          'Funding information unavailable',
-        ],
-        analystNote: 'Insufficient research data for financial analysis',
+        metrics: { revenue: 'Unknown', profitability: 'Unknown', debt: 'Unknown', marketCap: 'Unknown' },
+        businessModel: 'Unknown',
+        marketPosition: 'Unknown',
+        unavailableData: ['All financial and market data'],
+        financialSummary: 'Financial analysis could not be completed due to insufficient research data.',
       },
     };
   }
 
   try {
     const userMessage = buildFinancialUserMessage(companyName, validatedFindings, findings);
-    const parsed = await callGroqJSON(FINANCIAL_SYSTEM_PROMPT, userMessage);
+    
+    const parsed = await callLLM({
+      taskType: 'financial',
+      systemPrompt: FINANCIAL_SYSTEM_PROMPT,
+      userMessage,
+      maxTokens: 800,
+      allowFallback: false // Critical reasoning task, do NOT fallback
+    });
 
     // Normalize the strengths and weaknesses to always be objects with point + sourceUrls
     const normalizeItems = (items) =>
