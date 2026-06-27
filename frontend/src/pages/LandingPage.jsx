@@ -23,7 +23,8 @@ export default function LandingPage() {
   }, [location.state]);
 
   useEffect(() => {
-    fetch('/api/recent')
+    const apiUrl = import.meta.env.VITE_API_URL || '';
+    fetch(`${apiUrl}/api/recent`)
       .then((r) => r.json())
       .then((data) => setRecentHistory(data.analyses || []))
       .catch(() => {});
