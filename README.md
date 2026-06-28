@@ -1,5 +1,9 @@
 # SkiesInvest
 
+🚀 **Live Demo:** [https://skies-invest.vercel.app/](https://skies-invest.vercel.app/)
+
+*(Note: The frontend is currently deployed live on Vercel, and the backend is hosted on Render at https://skiesinvest.onrender.com)*
+
 SkiesInvest is an AI-powered investment research platform that acts as your virtual investment committee. By simply entering a company name, the system deploys a team of AI agents to dynamically scrape real-time financial data, validate facts, assess risks, and produce a clear "INVEST", "WATCH", or "PASS" recommendation.
 
 ## What It Does
