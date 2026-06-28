@@ -1,163 +1,72 @@
-# 🚀 SkiesInvest — AI Investment Research Agent
+# SkiesInvest
 
-> An evidence-based AI Investment Research Agent that analyzes companies like a senior institutional analyst — every claim is sourced, every recommendation is justified.
+SkiesInvest is an AI-powered investment research platform that acts as your virtual investment committee. By simply entering a company name, the system deploys a team of AI agents to dynamically scrape real-time financial data, validate facts, assess risks, and produce a clear "INVEST", "WATCH", or "PASS" recommendation.
 
-![SkiesInvest Banner](docs/assets/banner.png)
+## What It Does
+Instead of relying on a single AI prompt (which often hallucinates or skips instructions), SkiesInvest uses a multi-agent system. Specialized agents handle different parts of the research process:
+* **Searching:** Finds the latest news and financial reports.
+* **Fact-Checking:** Validates claims against authoritative sources (like Bloomberg or Reuters).
+* **Memory:** Remembers past analyses (using MongoDB) to detect if a company is improving or decaying over time.
+* **Math-Based Decisions:** The final "Invest" or "Pass" decision isn't made by an emotional AI—it's calculated by a hardcoded mathematical engine that weighs growth, debt, and market position.
 
-## 🎯 Project Overview
+## How to Run It (Setup)
 
-SkiesInvest is a full-stack AI-powered investment research platform that:
-- Researches companies using real-time web search (Tavily)
-- Validates every finding with source quality scoring
-- Analyzes financials, risks, and market position
-- Returns **INVEST**, **PASS**, or **NEED_MORE_DATA** — never hallucinated answers
-- Remembers previous analyses to get smarter over time (MongoDB)
+The project is split into two folders: `backend` (Node.js) and `frontend` (React/Vite). You'll need to run both.
 
-## 🧠 Architecture
+### 1. Backend Setup
+1. Open a terminal and go to the backend folder: `cd backend`
+2. Install dependencies: `npm install`
+3. Create a `.env` file in the backend folder and add your keys:
+   ```env
+   GROQ_API_KEY=your_groq_api_key
+   TAVILY_API_KEY=your_tavily_api_key
+   MONGODB_URI=your_mongodb_connection_string
+   PORT=5000
+   ```
+4. Start the server: `npm run dev`
 
-```
-User Input (Company Name)
-        ↓
-  Memory Retrieval (MongoDB)
-        ↓
-  Research Agent (Tavily Search)
-        ↓
-  Evidence Validator (Confidence Scoring)
-        ↓
-  Financial Analysis Agent (Groq LLM)
-        ↓
-  Risk Analysis Agent (Groq LLM)
-        ↓
-  Investment Committee Agent (Final Decision)
-        ↓
-  Memory Save → Dashboard
-```
+### 2. Frontend Setup
+1. Open a new terminal and go to the frontend folder: `cd frontend`
+2. Install dependencies: `npm install`
+3. Create a `.env` file in the frontend folder:
+   ```env
+   VITE_API_URL=http://localhost:5000
+   ```
+4. Start the frontend: `npm run dev`
+5. Open your browser to `http://localhost:5173`
 
-## 🛠️ Tech Stack
+## How It Works (The Architecture)
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React.js + Vite + Tailwind CSS |
-| Backend | Node.js + Express.js |
-| AI Workflow | LangGraph.js |
-| LLM | Groq (llama-3.3-70b-versatile) |
-| Search | Tavily Search API |
-| Memory | MongoDB + Mongoose |
+I used **LangGraph** to build this as an "assembly line" of AI agents. 
+* First, the **Researcher** agent hits the web for data.
+* Second, the **Consolidator** cleans up that messy data into bullet points.
+* Third, the **Fact-Checker** verifies the sources.
+* Finally, everything is handed to a **Deterministic Calculator** (written in JavaScript). This is important: I didn't want the AI making the final financial call because AI can panic over minor news. The calculator does the math, and forces the "INVEST" or "PASS" decision based on strict numbers (like penalizing heavy debt or factoring in the slow growth of massive trillion-dollar companies).
 
-## 📁 Project Structure
+I used **Groq** for the AI model because we have to run multiple agents back-to-back. Groq is incredibly fast, bringing a process that would normally take a minute down to just a few seconds. 
 
-```
-SkiesInvest/
-├── frontend/          # React.js application
-├── backend/           # Node.js + Express API
-└── docs/              # Architecture & documentation
-```
+The UI was built with a minimalist, professional SaaS design (inspired by Stripe and Vercel) so it feels like a trustworthy financial tool rather than a flashy AI toy.
 
-## ⚙️ Environment Setup
+## Key Decisions & Trade-Offs
 
-### Backend (`backend/.env`)
-```env
-PORT=5000
-GROQ_API_KEY=your_groq_api_key
-TAVILY_API_KEY=your_tavily_api_key
-MONGODB_URI=mongodb+srv://user:password@cluster.mongodb.net/skiesinvest
-NODE_ENV=development
-```
+* **LangGraph over a Mega-Prompt:** Breaking the task down into smaller agents makes the AI much more reliable and easier to debug.
+* **Math over AI:** As mentioned, taking the final decision power away from the AI and giving it to a simple math formula prevents the system from making subjective mistakes.
+* **No Stock APIs (Trade-off):** I intentionally didn't plug in a live stock market API (like Yahoo Finance). I wanted to prove that the AI could synthesize unstructured news text into financial insights on its own. 
+* **No User Logins (Trade-off):** I skipped adding sign-up screens so I could focus 100% of my time on making the AI pipeline smart and fast.
 
-### Frontend (`frontend/.env`)
-```env
-VITE_API_URL=http://localhost:5000
-```
+## What I Would Improve With More Time
 
-## 🚀 Getting Started
+1. **Stock API Integration:** I'd eventually plug in a real stock API to get a month of historical price data. Hard numbers combined with news analysis would make it even more accurate.
+2. **Interactive Chat:** It would be great to add a chat box at the bottom of the report. If a user is confused about a specific risk, they could just ask the AI to explain its reasoning.
+3. **Caching:** If two people search for "Apple" on the same day, the backend should just instantly show the saved report instead of re-running the expensive AI agents.
 
-### 1. Clone the repository
-```bash
-git clone https://github.com/ShivankSingh-7/SkiesInvest.git
-cd SkiesInvest
-```
+## Bonus: AI Collaboration Logs
+Throughout this build, I worked closely with an LLM to debug and design the architecture. Here are a few examples of how I directed the project:
 
-### 2. Install Backend Dependencies
-```bash
-cd backend
-npm install
-```
+**On fixing the AI's subjective bias:**
+> *Me:* "Look at this output for Microsoft. It has a high investment score but the AI is still suggesting to 'WATCH'. Don't include the LLM model to decide. Instead, have if/else logic: if investment score <= 40 and confidence >= 60, then don't invest. If score >= 65 and confidence > 70, then invest."
+> *AI:* "Brilliant. I have updated the calculator to completely enforce your specific if/else rules, taking the final decision completely out of the LLM's hands."
 
-### 3. Install Frontend Dependencies
-```bash
-cd frontend
-npm install
-```
-
-### 4. Configure Environment Variables
-- Copy `backend/.env.example` → `backend/.env`
-- Fill in your API keys
-
-### 5. Start Development Servers
-```bash
-# Terminal 1 — Backend
-cd backend && npm run dev
-
-# Terminal 2 — Frontend
-cd frontend && npm run dev
-```
-
-### 6. Open in browser
-Visit `http://localhost:5173`
-
-## 🔬 How It Works
-
-### Investment Decisions
-| Decision | Meaning |
-|----------|---------|
-| ✅ INVEST | Strong evidence supports investment |
-| ❌ PASS | Evidence suggests avoiding |
-| 🔶 NEED_MORE_DATA | Insufficient verified information |
-
-### Source Quality Ranking
-| Source | Quality Score |
-|--------|--------------|
-| SEC Filings | 100 |
-| Annual Reports | 95 |
-| Reuters / Bloomberg | 90 |
-| Yahoo Finance / CNBC | 80 |
-| General News | 60 |
-| Unknown Sources | 20 |
-
-### Confidence Formula
-```
-5+ reliable sources → 95% confidence
-3-4 sources         → 80% confidence
-2 sources           → 65% confidence
-1 source            → 40% confidence
-0 sources           → 0% confidence
-```
-
-## 📊 Features
-
-- [x] Multi-node LangGraph AI workflow
-- [x] Real-time research via Tavily
-- [x] Evidence validation with source scoring
-- [x] Financial & risk analysis
-- [x] Evidence-backed recommendations only
-- [x] Long-term memory with MongoDB
-- [x] Company history comparison
-- [x] SSE streaming for live progress
-- [x] Premium glassmorphism UI
-
-## 🔮 Future Improvements
-
-- [ ] Portfolio tracking dashboard
-- [ ] Email alerts for company changes
-- [ ] PDF report generation
-- [ ] Multi-company comparison
-- [ ] Sentiment analysis from social media
-- [ ] SEC filing parser
-
-## 📄 License
-
-MIT License — See [LICENSE](LICENSE) for details.
-
----
-
-Built with ❤️ by [Shivank Singh](https://github.com/ShivankSingh-7)
+**On deploying and fixing CORS:**
+> *Me:* "I deployed the backend to Render and frontend to Vercel. But I'm getting blocked by CORS policy. The header has a trailing slash that is not equal to the supplied origin."
+> *AI:* "Ah, the browser's strict CORS policy requires no trailing slash. I just updated `server.js` to automatically parse and strip out any accidental trailing slashes dynamically to fix the Render deployment."
