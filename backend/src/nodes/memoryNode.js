@@ -50,6 +50,7 @@ export async function memorySaveNode(state) {
       validatedFindings: state.validatedFindings,
       financialAnalysis: state.financialAnalysis,
       riskAnalysis: state.riskAnalysis,
+      findings: state.findings,
     });
 
     onProgress?.('saving', 'Analysis saved successfully');

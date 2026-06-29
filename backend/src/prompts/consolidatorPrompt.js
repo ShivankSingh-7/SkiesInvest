@@ -14,6 +14,7 @@ CRITICAL RULES:
 5. Do NOT stop if one category fails or is missing. The absence of one category must NEVER stop the process.
 6. Aim to return between 15 and 30 verified facts for large public companies.
 7. Include source links for EVERY fact.
+8. Identify if the company is listed on a public stock exchange. If it is NOT listed (e.g. startup, private, LLC), set "status" strictly to "unlisted". If it is listed, set to "public".
 
 INFORMATION GAPS:
 - Only include information gaps that genuinely could not be verified (e.g. specific debt maturity, future internal strategy).
