@@ -311,12 +311,12 @@ export function determineDecisionThreshold(
   riskScore
 ) {
   // if investment score less than or equal to 40% and confidence score is greater than equal to 60% then return don't invest
-  if (investmentScore <= 40 && confidence >= 60) {
+  if (investmentScore <= 50 && confidence >= 60) {
     return "Don't Invest"; // Note: mapped to PASS downstream
   }
 
   // if investment score is greater than 40 and less than 65 and confidence score greater than 50 % then return watch
-  if (investmentScore > 40 && investmentScore < 65 && confidence > 50) {
+  if (investmentScore > 50 && investmentScore < 65 && confidence > 50) {
     return 'WATCH';
   }
 
