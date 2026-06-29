@@ -33,6 +33,10 @@ const CompanyMemorySchema = new mongoose.Schema(
     displayName: {
       type: String, // Original casing for display
     },
+    companyStatus: {
+      type: String, // Public or Private
+      default: 'unknown'
+    },
     previousAnalysis: {
       decision: String,
       confidence: Number,

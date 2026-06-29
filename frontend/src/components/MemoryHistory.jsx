@@ -70,12 +70,24 @@ export default function MemoryHistory({ history = [] }) {
 
                 {/* Info */}
                 <div style={{ minWidth: 0 }}>
-                  <p style={{
-                    fontWeight: 600, fontSize: 15, color: 'var(--text-primary)',
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: '0 0 4px 0'
-                  }}>
-                    {item.displayName || item.companyName}
-                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 4px 0' }}>
+                    <p style={{
+                      fontWeight: 600, fontSize: 15, color: 'var(--text-primary)',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0
+                    }}>
+                      {item.displayName || item.companyName}
+                    </p>
+                    {item.companyStatus && (String(item.companyStatus).toLowerCase().includes('private') || String(item.companyStatus).toLowerCase().includes('unlisted') || String(item.companyStatus).toLowerCase().includes('not listed')) && (
+                      <span style={{
+                        fontSize: 9, padding: '2px 6px', borderRadius: 4,
+                        background: 'rgba(245, 158, 11, 0.1)', color: 'var(--warning)',
+                        border: '1px solid rgba(245, 158, 11, 0.2)', fontWeight: 700,
+                        textTransform: 'uppercase', letterSpacing: '0.05em'
+                      }}>
+                        Not Listed
+                      </span>
+                    )}
+                  </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, color }}>
                       {icon}

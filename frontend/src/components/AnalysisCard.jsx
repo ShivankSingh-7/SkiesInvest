@@ -121,7 +121,7 @@ export default function AnalysisCard({ result }) {
               <h1 style={{ fontSize: 32, fontWeight: 700, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em' }}>
                 {companyName}
               </h1>
-              {companyStatus && String(companyStatus).toLowerCase().includes('private') && (
+              {companyStatus && (String(companyStatus).toLowerCase().includes('private') || String(companyStatus).toLowerCase().includes('unlisted') || String(companyStatus).toLowerCase().includes('not listed')) && (
                 <span style={{
                   fontSize: 11, padding: '4px 10px', borderRadius: 6,
                   background: 'rgba(245, 158, 11, 0.1)', color: 'var(--warning)',

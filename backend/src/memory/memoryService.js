@@ -48,6 +48,7 @@ export async function saveCompanyMemory(companyName, analysisData) {
 
     const updateData = {
       displayName: companyName,
+      companyStatus: analysisData.findings?.company?.status || 'unknown',
       previousAnalysis: analysisData.decision,
       verifiedFacts: analysisData.decision?.verifiedFacts || [],
       unverifiedClaims: analysisData.decision?.unverifiedClaims || [],
